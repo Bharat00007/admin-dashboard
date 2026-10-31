@@ -235,28 +235,25 @@ export const MasterCatalogPage: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider select-none border-b border-outline-variant/20">
-                <th className="py-3.5 px-4 w-12 text-center">
-                  <input type="checkbox" className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary cursor-pointer" />
-                </th>
-                <th className="py-3.5 px-3 w-16">Item</th>
+                <th className="py-3.5 pl-6 pr-3 w-16">Item</th>
                 <th className="py-3.5 px-4 min-w-[220px]">
                   <div className="flex items-center gap-1.5 cursor-pointer hover:text-on-surface">
                     <span>Product Name</span>
                     <span className="material-symbols-outlined text-[14px]">unfold_more</span>
                   </div>
                 </th>
-                <th className="py-3.5 px-4">Brand</th>
-                <th className="py-3.5 px-4">Category</th>
-                <th className="py-3.5 px-4 text-center">Unit</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Brand</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Category</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[80px]">Unit</th>
                 <th className="py-3.5 px-4 max-w-[260px]">Description Preview</th>
-                <th className="py-3.5 px-4 text-center">Status</th>
-                <th className="py-3.5 px-6 text-right">Actions</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-6 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-on-surface-variant">
+                  <td colSpan={8} className="py-12 text-center text-on-surface-variant">
                     <span className="material-symbols-outlined text-[40px] text-outline mb-2">search_off</span>
                     <p className="font-body-md">No products match your current filters.</p>
                   </td>
@@ -264,10 +261,7 @@ export const MasterCatalogPage: React.FC = () => {
               ) : (
                 filteredProducts.map(p => (
                   <tr key={p.id} className="hover:bg-surface-container-low/60 transition-colors group">
-                    <td className="py-3.5 px-4 text-center">
-                      <input type="checkbox" className="w-4 h-4 rounded text-primary accent-primary cursor-pointer" />
-                    </td>
-                    <td className="py-3.5 px-3">
+                    <td className="py-3.5 pl-6 pr-3">
                       <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-high p-0.5 flex-shrink-0 shadow-xs border border-outline-variant/30">
                         <img className="w-full h-full object-cover rounded-md" src={p.imageUrl} alt={p.name} />
                       </div>
@@ -283,19 +277,19 @@ export const MasterCatalogPage: React.FC = () => {
                         <span className="font-code-sm text-code-sm text-outline font-normal">{p.sku}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-label-md text-label-md text-on-surface-variant">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-medium">
+                    <td className="py-3.5 px-4 font-label-md text-label-md text-on-surface-variant whitespace-nowrap">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-medium whitespace-nowrap">
                         {p.brand}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5 text-on-surface-variant">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-on-surface-variant whitespace-nowrap">
                         <span className="material-symbols-outlined text-[16px] text-primary">pets</span>
                         <span>{p.category}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="font-code-sm text-code-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-medium border border-outline-variant/20">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                      <span className="inline-flex items-center justify-center font-code-sm text-code-sm px-2.5 py-0.5 rounded-md bg-surface-container-high text-on-surface font-medium border border-outline-variant/20 whitespace-nowrap">
                         {p.unit}
                       </span>
                     </td>

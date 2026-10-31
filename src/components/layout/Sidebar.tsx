@@ -180,17 +180,6 @@ export const Sidebar: React.FC = () => {
           </button>
         </nav>
       </div>
-
-      {/* Footer Version Badge */}
-      <div className="p-space-md border-t border-outline-variant/20 bg-surface-container-lowest">
-        <div className="flex items-center justify-between px-2 text-on-surface-variant font-label-sm text-label-sm">
-          <span>Version v2.4.0</span>
-          <span className="font-semibold text-tertiary-container flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-tertiary-container animate-pulse"></span>
-            Enterprise
-          </span>
-        </div>
-      </div>
     </aside>
   );
 };

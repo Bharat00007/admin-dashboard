@@ -128,8 +128,8 @@ export const UnitsPage: React.FC = () => {
                       {u.name}
                     </span>
                   </td>
-                  <td className="py-3.5 px-4">
-                    <span className="font-code-sm font-bold px-2 py-0.5 rounded bg-surface-container-high text-primary border border-outline-variant/30">
+                  <td className="py-3.5 px-4 whitespace-nowrap">
+                    <span className="inline-flex items-center font-code-sm font-bold px-2 py-0.5 rounded bg-surface-container-high text-primary border border-outline-variant/30 whitespace-nowrap">
                       {u.code}
                     </span>
                   </td>
