@@ -55,7 +55,7 @@ export const SellerApprovalDetailsPage: React.FC = () => {
       </div>
 
       {/* Main Review Card */}
-      <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/30 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-surface-container-lowest rounded-xl p-4 sm:p-6 shadow-xs border border-outline-variant/30 mb-4 sm:mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
         <div>
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <h1 className="font-headline-lg font-bold text-on-surface">{req.shopName}</h1>
@@ -78,7 +78,7 @@ export const SellerApprovalDetailsPage: React.FC = () => {
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-3 self-start md:self-auto">
+        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto">
           {req.status !== 'Approved' && (
             <>
               <button
@@ -102,7 +102,7 @@ export const SellerApprovalDetailsPage: React.FC = () => {
       </div>
 
       {/* Audit Checklist & Verification Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
         {/* Statutory Identifiers */}
         <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-xs">
           <h3 className="font-headline-sm font-bold text-on-surface mb-4 flex items-center gap-2">

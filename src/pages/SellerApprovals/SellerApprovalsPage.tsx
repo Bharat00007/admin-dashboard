@@ -49,13 +49,13 @@ export const SellerApprovalsPage: React.FC = () => {
       </div>
 
       {/* Toolbar Filter */}
-      <div className="bg-surface-container-lowest rounded-xl p-4 mb-6 shadow-sm border border-outline-variant/30 flex items-center justify-between gap-3">
+      <div className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 mb-4 sm:mb-6 shadow-xs border border-outline-variant/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="text-body-sm font-semibold text-on-surface">Filter Pipeline:</span>
+          <span className="text-body-sm font-semibold text-on-surface whitespace-nowrap">Filter Pipeline:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface border border-outline-variant/20 focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="flex-1 sm:flex-initial px-3 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface border border-outline-variant/20 focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <option value="">All Applications ({approvals.length})</option>
             <option value="Pending">Pending Audit</option>
@@ -65,7 +65,7 @@ export const SellerApprovalsPage: React.FC = () => {
           </select>
         </div>
 
-        <span className="text-body-sm text-on-surface-variant font-medium">
+        <span className="text-body-sm text-on-surface-variant font-medium shrink-0">
           Showing {filteredApprovals.length} applications
         </span>
       </div>
@@ -76,14 +76,14 @@ export const SellerApprovalsPage: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider select-none border-b border-outline-variant/20">
-                <th className="py-3.5 px-6">Proposed Shop Name</th>
-                <th className="py-3.5 px-4">Applicant &amp; Phone</th>
-                <th className="py-3.5 px-4">Entity Type</th>
-                <th className="py-3.5 px-4">City / Region</th>
-                <th className="py-3.5 px-4 text-center">Submitted Docs</th>
-                <th className="py-3.5 px-4">Applied</th>
-                <th className="py-3.5 px-4 text-center">Review Status</th>
-                <th className="py-3.5 px-6 text-right">Decision Actions</th>
+                <th className="py-3.5 px-6 whitespace-nowrap">Proposed Shop Name</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Applicant &amp; Phone</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Entity Type</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">City / Region</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Submitted Docs</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Applied</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Review Status</th>
+                <th className="py-3.5 px-6 text-right whitespace-nowrap">Decision Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">

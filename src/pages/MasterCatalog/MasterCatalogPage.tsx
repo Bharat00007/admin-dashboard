@@ -151,16 +151,16 @@ export const MasterCatalogPage: React.FC = () => {
       </div>
 
       {/* Filter & Utility Toolbar */}
-      <div className="bg-surface-container-lowest rounded-xl p-4 mb-6 shadow-sm border border-outline-variant/30 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+      <div className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 mb-4 sm:mb-6 shadow-xs border border-outline-variant/30 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
         {/* Search Field */}
-        <div className="relative flex-1 min-w-[280px]">
+        <div className="relative w-full lg:flex-1">
           <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search products by name, barcode, or SKU..."
-            className="w-full pl-10 pr-10 py-2 rounded-lg bg-surface-container-low text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all border border-outline-variant/20"
+            className="w-full pl-10 pr-10 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all border border-outline-variant/20"
           />
           {search && (
             <button
@@ -173,13 +173,13 @@ export const MasterCatalogPage: React.FC = () => {
         </div>
 
         {/* Filter Selectors */}
-        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 w-full lg:w-auto">
           {/* Category Dropdown */}
-          <div className="relative min-w-[140px] flex-1 sm:flex-initial">
+          <div className="relative min-w-[120px] flex-1 sm:flex-initial">
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer border border-outline-variant/20"
+              className="w-full appearance-none pl-3 pr-8 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer border border-outline-variant/20"
             >
               <option value="">All Categories</option>
               {categories.map(c => (
@@ -190,11 +190,11 @@ export const MasterCatalogPage: React.FC = () => {
           </div>
 
           {/* Brand Dropdown */}
-          <div className="relative min-w-[130px] flex-1 sm:flex-initial">
+          <div className="relative min-w-[110px] flex-1 sm:flex-initial">
             <select
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer border border-outline-variant/20"
+              className="w-full appearance-none pl-3 pr-8 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer border border-outline-variant/20"
             >
               <option value="">All Brands</option>
               {brands.map(b => (
@@ -205,11 +205,11 @@ export const MasterCatalogPage: React.FC = () => {
           </div>
 
           {/* Status Dropdown */}
-          <div className="relative min-w-[110px] flex-1 sm:flex-initial">
+          <div className="relative min-w-[100px] flex-1 sm:flex-initial">
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer border border-outline-variant/20"
+              className="w-full appearance-none pl-3 pr-8 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer border border-outline-variant/20"
             >
               <option value="">All Status</option>
               <option value="Active">Active</option>
@@ -221,7 +221,7 @@ export const MasterCatalogPage: React.FC = () => {
           {/* Refresh / Reset Button */}
           <button
             onClick={() => { setSearch(''); setSelectedCategory(''); setSelectedBrand(''); setSelectedStatus(''); }}
-            className="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant transition-colors flex items-center justify-center border border-outline-variant/20"
+            className="p-2 min-h-[40px] min-w-[40px] rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant transition-colors flex items-center justify-center border border-outline-variant/20 active:scale-95"
             title="Reset Filters"
           >
             <span className="material-symbols-outlined text-[18px]">refresh</span>
@@ -369,7 +369,7 @@ export const MasterCatalogPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
                 SKU Code *
@@ -395,7 +395,7 @@ export const MasterCatalogPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
                 Brand *
@@ -451,7 +451,7 @@ export const MasterCatalogPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
                 Image URL

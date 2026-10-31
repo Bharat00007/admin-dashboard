@@ -17,9 +17,9 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = 'inline-flex items-center justify-center font-label-md transition-all duration-150 rounded-lg active:scale-95 disabled:opacity-50 disabled:pointer-events-none';
 
   const sizeClasses = {
-    sm: 'px-2.5 py-1.5 text-label-sm gap-1.5 text-[12px]',
-    md: 'px-4 py-2 text-label-md gap-2 text-[13px]',
-    lg: 'px-5 py-2.5 text-label-lg gap-2.5 text-[14px]'
+    sm: 'px-3 py-1.5 min-h-[36px] text-label-sm gap-1.5 text-[12px]',
+    md: 'px-4 py-2 min-h-[40px] text-label-md gap-2 text-[13px]',
+    lg: 'px-5 py-2.5 min-h-[44px] text-label-lg gap-2.5 text-[14px]'
   }[size];
 
   const variantClasses = {

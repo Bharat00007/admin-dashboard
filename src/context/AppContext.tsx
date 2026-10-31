@@ -76,6 +76,8 @@ interface AppContextType {
   setGlobalSearch: (q: string) => void;
   isSearchModalOpen: boolean;
   setIsSearchModalOpen: (open: boolean) => void;
+  isMobileMenuOpen: boolean;
+  setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -95,6 +97,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const [globalSearch, setGlobalSearch] = useState('');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [toast, setToast] = useState<ToastState>({
     show: false,
@@ -297,7 +300,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       globalSearch,
       setGlobalSearch,
       isSearchModalOpen,
-      setIsSearchModalOpen
+      setIsSearchModalOpen,
+      isMobileMenuOpen,
+      setIsMobileMenuOpen
     }}>
       {children}
     </AppContext.Provider>

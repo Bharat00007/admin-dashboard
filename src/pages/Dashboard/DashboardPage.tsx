@@ -128,58 +128,58 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="flex flex-col w-full space-y-6">
       {/* Header & Live Pulse Section */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">Dashboard</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold tracking-tight">Dashboard</h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold select-none">
               <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse" />
               Live Sync
             </span>
           </div>
-          <p className="font-body-md text-body-md text-on-surface-variant mt-1">
+          <p className="font-body-sm sm:font-body-md text-body-sm sm:text-body-md text-on-surface-variant mt-0.5 sm:mt-1">
             Welcome to Gotails Admin. Manage your marketplace from one place.
           </p>
         </div>
 
         {/* Quick Operations Pill Bar */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <button 
             type="button"
             onClick={() => showToast('Catalog Exported', 'Downloaded master catalog specification CSV.')}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors shadow-sm"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 min-h-[40px] rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors shadow-xs active:scale-95"
           >
             <span className="material-symbols-outlined text-[18px] text-outline">file_download</span>
-            <span>Export Catalog</span>
+            <span className="whitespace-nowrap">Export Catalog</span>
           </button>
           <button 
             type="button"
             onClick={() => setActiveTab('products')}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-sm active:scale-95"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 min-h-[40px] rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-xs active:scale-95"
           >
             <span className="material-symbols-outlined text-[18px]">add_circle</span>
-            <span>Add Product</span>
+            <span className="whitespace-nowrap">Add Product</span>
           </button>
         </div>
       </div>
 
-      {/* Metric Summary Bento Grid (6 Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      {/* Metric Summary Bento Grid (6 Cards, 2-col on mobile, 3-col on tablet, 6-col on desktop) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         {/* 1. Total Sellers */}
         <div 
           onClick={() => setActiveTab('sellers')}
-          className="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-outline-variant/20"
+          className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between hover:shadow-md transition-all cursor-pointer border border-outline-variant/20 active:scale-98"
         >
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Total Sellers</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">store</span>
+          <div className="flex items-center justify-between gap-1">
+            <span className="font-label-sm text-[11px] sm:text-label-sm uppercase tracking-wider text-on-surface-variant font-bold truncate">Total Sellers</span>
+            <div className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">store</span>
             </div>
           </div>
-          <div className="mt-3">
-            <div className="font-headline-xl text-headline-xl text-on-surface font-bold leading-none">142</div>
-            <div className="flex items-center gap-1 mt-2 text-tertiary font-label-sm text-label-sm font-semibold">
-              <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
+          <div className="mt-2.5 sm:mt-3">
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">142</div>
+            <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-tertiary text-[11px] sm:text-label-sm font-semibold truncate">
+              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">arrow_upward</span>
               <span>+8 this week</span>
             </div>
           </div>
@@ -188,22 +188,22 @@ export const DashboardPage: React.FC = () => {
         {/* 2. Pending Seller Approvals (Highlighted Amber Card) */}
         <div 
           onClick={() => setActiveTab('approvals')}
-          className="group bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-all relative overflow-hidden bg-gradient-to-br from-surface-container-lowest to-secondary-container/10 border border-secondary-container/30 cursor-pointer"
+          className="group bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between hover:shadow-md transition-all relative overflow-hidden bg-gradient-to-br from-surface-container-lowest to-secondary-container/10 border border-secondary-container/30 cursor-pointer active:scale-98"
         >
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Pending Approvals</span>
-            <div className="w-8 h-8 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
-              <span className="material-symbols-outlined text-[18px]">pending_actions</span>
+          <div className="flex items-center justify-between gap-1">
+            <span className="font-label-sm text-[11px] sm:text-label-sm uppercase tracking-wider text-secondary font-bold truncate">Approvals</span>
+            <div className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary shrink-0">
+              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">pending_actions</span>
             </div>
           </div>
-          <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="font-headline-xl text-headline-xl text-secondary font-bold leading-none">5</span>
-              <span className="px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold">Action Req.</span>
+          <div className="mt-2.5 sm:mt-3">
+            <div className="flex items-baseline gap-1.5 sm:gap-2">
+              <span className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-secondary font-bold leading-none">5</span>
+              <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-[10px] sm:text-label-sm font-semibold">Action Req.</span>
             </div>
-            <div className="flex items-center gap-1 mt-2 text-secondary font-label-sm text-label-sm group-hover:translate-x-0.5 transition-transform font-semibold">
+            <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-secondary text-[11px] sm:text-label-sm group-hover:translate-x-0.5 transition-transform font-semibold truncate">
               <span>Review requests</span>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span className="material-symbols-outlined text-[12px] sm:text-[14px]">chevron_right</span>
             </div>
           </div>
         </div>
@@ -211,18 +211,18 @@ export const DashboardPage: React.FC = () => {
         {/* 3. Total Customers */}
         <div 
           onClick={() => setActiveTab('customers')}
-          className="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-outline-variant/20"
+          className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between hover:shadow-md transition-all cursor-pointer border border-outline-variant/20 active:scale-98"
         >
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Customers</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">group</span>
+          <div className="flex items-center justify-between gap-1">
+            <span className="font-label-sm text-[11px] sm:text-label-sm uppercase tracking-wider text-on-surface-variant font-bold truncate">Customers</span>
+            <div className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">group</span>
             </div>
           </div>
-          <div className="mt-3">
-            <div className="font-headline-xl text-headline-xl text-on-surface font-bold leading-none">4,892</div>
-            <div className="flex items-center gap-1 mt-2 text-tertiary font-label-sm text-label-sm font-semibold">
-              <span className="material-symbols-outlined text-[14px]">arrow_upward</span>
+          <div className="mt-2.5 sm:mt-3">
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">4,892</div>
+            <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-tertiary text-[11px] sm:text-label-sm font-semibold truncate">
+              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">arrow_upward</span>
               <span>+124 this month</span>
             </div>
           </div>
@@ -231,18 +231,18 @@ export const DashboardPage: React.FC = () => {
         {/* 4. Master Catalog Products */}
         <div 
           onClick={() => setActiveTab('products')}
-          className="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-outline-variant/20"
+          className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between hover:shadow-md transition-all cursor-pointer border border-outline-variant/20 active:scale-98"
         >
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Catalog Products</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">inventory_2</span>
+          <div className="flex items-center justify-between gap-1">
+            <span className="font-label-sm text-[11px] sm:text-label-sm uppercase tracking-wider text-on-surface-variant font-bold truncate">Products</span>
+            <div className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">inventory_2</span>
             </div>
           </div>
-          <div className="mt-3">
-            <div className="font-headline-xl text-headline-xl text-on-surface font-bold leading-none">1,280</div>
-            <div className="flex items-center gap-1 mt-2 text-on-surface-variant font-label-sm text-label-sm">
-              <span className="material-symbols-outlined text-[14px] text-tertiary font-bold">check_circle</span>
+          <div className="mt-2.5 sm:mt-3">
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">1,280</div>
+            <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-on-surface-variant text-[11px] sm:text-label-sm truncate">
+              <span className="material-symbols-outlined text-[13px] sm:text-[14px] text-tertiary font-bold">check_circle</span>
               <span>99.4% in-stock</span>
             </div>
           </div>
@@ -251,17 +251,17 @@ export const DashboardPage: React.FC = () => {
         {/* 5. Total Categories */}
         <div 
           onClick={() => setActiveTab('categories')}
-          className="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-outline-variant/20"
+          className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between hover:shadow-md transition-all cursor-pointer border border-outline-variant/20 active:scale-98"
         >
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Categories</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">category</span>
+          <div className="flex items-center justify-between gap-1">
+            <span className="font-label-sm text-[11px] sm:text-label-sm uppercase tracking-wider text-on-surface-variant font-bold truncate">Categories</span>
+            <div className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">category</span>
             </div>
           </div>
-          <div className="mt-3">
-            <div className="font-headline-xl text-headline-xl text-on-surface font-bold leading-none">24</div>
-            <div className="flex items-center gap-1 mt-2 text-on-surface-variant font-label-sm text-label-sm">
+          <div className="mt-2.5 sm:mt-3">
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">24</div>
+            <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-on-surface-variant text-[11px] sm:text-label-sm truncate">
               <span>8 Primary / 16 Sub</span>
             </div>
           </div>
@@ -270,18 +270,18 @@ export const DashboardPage: React.FC = () => {
         {/* 6. Total Brands */}
         <div 
           onClick={() => setActiveTab('brands')}
-          className="bg-surface-container-lowest rounded-xl p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow cursor-pointer border border-outline-variant/20"
+          className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between hover:shadow-md transition-all cursor-pointer border border-outline-variant/20 active:scale-98"
         >
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Brands</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[18px]">sell</span>
+          <div className="flex items-center justify-between gap-1">
+            <span className="font-label-sm text-[11px] sm:text-label-sm uppercase tracking-wider text-on-surface-variant font-bold truncate">Brands</span>
+            <div className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
+              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">sell</span>
             </div>
           </div>
-          <div className="mt-3">
-            <div className="font-headline-xl text-headline-xl text-on-surface font-bold leading-none">86</div>
-            <div className="flex items-center gap-1 mt-2 text-tertiary font-label-sm text-label-sm font-semibold">
-              <span className="material-symbols-outlined text-[14px]">new_releases</span>
+          <div className="mt-2.5 sm:mt-3">
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">86</div>
+            <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-tertiary text-[11px] sm:text-label-sm font-semibold truncate">
+              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">new_releases</span>
               <span>+3 verified</span>
             </div>
           </div>
@@ -289,9 +289,9 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Operational Filter Toolbar */}
-      <div className="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="relative flex items-center w-64">
+      <div className="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-outline-variant/30 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap">
+          <div className="relative flex items-center w-full sm:w-64">
             <span className="material-symbols-outlined absolute left-2.5 text-[18px] text-outline">search</span>
             <input 
               type="text"
@@ -301,13 +301,13 @@ export const DashboardPage: React.FC = () => {
               className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-surface-container-low text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 border border-outline-variant/20 transition-all"
             />
           </div>
-          <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg">
+          <div className="flex items-center gap-1 bg-surface-container-low p-1 rounded-lg overflow-x-auto max-w-full">
             {['All Entities', 'Bengaluru', 'Mumbai', 'Delhi NCR'].map(tab => (
               <button
                 key={tab}
                 type="button"
                 onClick={() => setFilterRegion(tab)}
-                className={`px-2.5 py-1 rounded-md text-label-sm font-label-sm transition-colors ${
+                className={`px-2.5 py-1 rounded-md text-label-sm font-label-sm transition-colors whitespace-nowrap ${
                   filterRegion === tab
                     ? 'bg-surface-container-lowest text-primary shadow-xs font-semibold'
                     : 'text-on-surface-variant hover:text-on-surface'
@@ -318,7 +318,7 @@ export const DashboardPage: React.FC = () => {
             ))}
           </div>
         </div>
-        <div className="flex items-center gap-2 text-body-sm font-body-sm text-on-surface-variant">
+        <div className="flex items-center gap-2 text-body-sm font-body-sm text-on-surface-variant shrink-0">
           <span className="w-2 h-2 rounded-full bg-tertiary" />
           <span>Gateway Health: 100% Operational</span>
         </div>
@@ -328,7 +328,7 @@ export const DashboardPage: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         {/* 1. PENDING SELLER APPROVALS (7 Columns wide on XL) */}
         <div className="xl:col-span-7 flex flex-col bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
-          <div className="px-5 py-4 flex items-center justify-between bg-surface-container-lowest border-b border-outline-variant/20">
+          <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-surface-container-lowest border-b border-outline-variant/20">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-secondary-container/20 flex items-center justify-center text-secondary">
                 <span className="material-symbols-outlined text-[18px]">verified</span>
@@ -340,7 +340,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             <button
               onClick={() => setActiveTab('approvals')}
-              className="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary hover:text-primary-container font-semibold transition-colors"
+              className="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary hover:text-primary-container font-semibold transition-colors self-start sm:self-auto"
             >
               <span>View All Approvals</span>
               <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -352,11 +352,11 @@ export const DashboardPage: React.FC = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
-                  <th className="py-2.5 px-4 font-semibold">Shop &amp; Seller</th>
-                  <th className="py-2.5 px-4 font-semibold">Contact &amp; City</th>
-                  <th className="py-2.5 px-4 font-semibold">Reg Date</th>
-                  <th className="py-2.5 px-4 font-semibold">Status</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">Action</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Shop &amp; Seller</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Contact &amp; City</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Reg Date</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Status</th>
+                  <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
@@ -425,7 +425,7 @@ export const DashboardPage: React.FC = () => {
 
         {/* 2. RECENTLY ADDED PRODUCTS (5 Columns wide on XL) */}
         <div className="xl:col-span-5 flex flex-col bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
-          <div className="px-5 py-4 flex items-center justify-between bg-surface-container-lowest border-b border-outline-variant/20">
+          <div className="px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-surface-container-lowest border-b border-outline-variant/20">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
                 <span className="material-symbols-outlined text-[18px]">shelves</span>
@@ -437,7 +437,7 @@ export const DashboardPage: React.FC = () => {
             </div>
             <button
               onClick={() => setActiveTab('products')}
-              className="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary hover:text-primary-container font-semibold transition-colors"
+              className="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary hover:text-primary-container font-semibold transition-colors self-start sm:self-auto"
             >
               <span>Catalog</span>
               <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
@@ -449,10 +449,10 @@ export const DashboardPage: React.FC = () => {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
-                  <th className="py-2.5 px-4 font-semibold">Product Name</th>
-                  <th className="py-2.5 px-4 font-semibold">Category</th>
-                  <th className="py-2.5 px-4 font-semibold">Status</th>
-                  <th className="py-2.5 px-4 font-semibold text-right">Added</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Product Name</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Category</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Status</th>
+                  <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Added</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
@@ -513,7 +513,7 @@ export const DashboardPage: React.FC = () => {
               <p className="font-label-sm text-label-sm text-on-surface-variant">Active marketplace merchant nodes with live store fronts</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse" />
               <span>137 Live Outlets</span>
@@ -533,12 +533,12 @@ export const DashboardPage: React.FC = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
-                <th className="py-2.5 px-4 font-semibold">Store Identifier</th>
-                <th className="py-2.5 px-4 font-semibold">Primary Contact</th>
-                <th className="py-2.5 px-4 font-semibold">Region / Hub</th>
-                <th className="py-2.5 px-4 font-semibold text-center">Verification</th>
-                <th className="py-2.5 px-4 font-semibold text-center">Store Status</th>
-                <th className="py-2.5 px-4 font-semibold text-right">Actions</th>
+                <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Store Identifier</th>
+                <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Primary Contact</th>
+                <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Region / Hub</th>
+                <th className="py-2.5 px-4 font-semibold text-center whitespace-nowrap">Verification</th>
+                <th className="py-2.5 px-4 font-semibold text-center whitespace-nowrap">Store Status</th>
+                <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
@@ -609,8 +609,8 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Bottom Compliance Status Bar */}
-        <div className="p-4 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm font-body-sm text-on-surface-variant border-t border-outline-variant/20">
-          <div className="flex items-center gap-2">
+        <div className="p-3 sm:p-4 bg-surface-container-low flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-body-sm font-body-sm text-on-surface-variant border-t border-outline-variant/20">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="material-symbols-outlined text-[16px] text-tertiary font-bold">check</span>
             <span>All newly registered stores comply with Pet Care Goods &amp; Services Guidelines (2024).</span>
           </div>

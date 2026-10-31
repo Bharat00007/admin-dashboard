@@ -8,8 +8,7 @@ export type TabType =
   | 'seller-details'
   | 'customers'
   | 'approvals'
-  | 'approval-details'
-  | 'flow';
+  | 'approval-details';
 
 export interface Product {
   id: string;

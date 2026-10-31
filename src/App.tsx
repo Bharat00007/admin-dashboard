@@ -15,7 +15,6 @@ import { SellerDetailsPage } from './pages/Sellers/SellerDetailsPage';
 import { CustomersPage } from './pages/Customers/CustomersPage';
 import { SellerApprovalsPage } from './pages/SellerApprovals/SellerApprovalsPage';
 import { SellerApprovalDetailsPage } from './pages/SellerApprovals/SellerApprovalDetailsPage';
-import { MarketplaceFlowPage } from './pages/MarketplaceFlow/MarketplaceFlowPage';
 
 export const AppContent: React.FC = () => {
   const { activeTab } = useApp();
@@ -42,8 +41,6 @@ export const AppContent: React.FC = () => {
         return <SellerApprovalsPage />;
       case 'approval-details':
         return <SellerApprovalDetailsPage />;
-      case 'flow':
-        return <MarketplaceFlowPage />;
       default:
         return <DashboardPage />;
     }
@@ -60,13 +57,13 @@ export const AppContent: React.FC = () => {
       {/* Fixed 250px Left Sidebar */}
       <Sidebar />
 
-      {/* Main Content Area (offset by 250px) */}
-      <div className="pl-[250px] min-h-screen flex flex-col">
+      {/* Main Content Area (offset by 250px on desktop) */}
+      <div className="lg:pl-[250px] min-h-screen flex flex-col w-full min-w-0">
         {/* Sticky Top Navigation Bar */}
         <Topbar />
 
         {/* Dynamic Page Body */}
-        <main className="w-full flex-1 bg-surface px-8 py-6">
+        <main className="w-full flex-1 bg-surface px-4 py-4 sm:px-6 sm:py-6 lg:px-8 max-w-full min-w-0">
           {renderActiveScreen()}
         </main>
       </div>

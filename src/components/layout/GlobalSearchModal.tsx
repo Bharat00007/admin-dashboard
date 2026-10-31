@@ -63,21 +63,21 @@ export const GlobalSearchModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 p-4 bg-[#202633]/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-6 sm:pt-20 p-3 sm:p-4 bg-[#202633]/60 backdrop-blur-sm animate-fade-in">
       <div 
-        className="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-2xl border border-outline-variant/30 flex flex-col overflow-hidden max-h-[70vh]"
+        className="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-2xl border border-outline-variant/30 flex flex-col overflow-hidden max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="p-4 border-b border-outline-variant/20 flex items-center gap-3 bg-surface-container-lowest">
-          <span className="material-symbols-outlined text-[24px] text-primary">search</span>
+        <div className="p-3 sm:p-4 border-b border-outline-variant/20 flex items-center gap-2.5 sm:gap-3 bg-surface-container-lowest">
+          <span className="material-symbols-outlined text-[20px] sm:text-[24px] text-primary">search</span>
           <input
             type="text"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type to search products, sellers, customers, categories..."
-            className="w-full bg-transparent text-headline-sm font-headline-sm text-on-surface placeholder:text-outline focus:outline-none"
+            placeholder="Search products, sellers, customers..."
+            className="w-full bg-transparent text-base sm:text-headline-sm font-medium sm:font-headline-sm text-on-surface placeholder:text-outline focus:outline-none"
           />
           {query && (
             <button 

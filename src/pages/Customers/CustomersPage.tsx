@@ -68,23 +68,23 @@ export const CustomersPage: React.FC = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-surface-container-lowest rounded-xl p-4 mb-6 shadow-sm border border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="relative flex-1 w-full max-w-md">
+      <div className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 mb-4 sm:mb-6 shadow-xs border border-outline-variant/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search customers by name, email, phone, or city..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-surface-container-low text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 border border-outline-variant/20"
+            className="w-full pl-10 pr-4 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 border border-outline-variant/20"
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 border border-outline-variant/20"
+            className="flex-1 sm:flex-initial px-3 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-label-md font-label-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 border border-outline-variant/20"
           >
             <option value="">All Accounts</option>
             <option value="Active">Active Customers</option>
@@ -111,14 +111,14 @@ export const CustomersPage: React.FC = () => {
                 <th className="py-3.5 px-4 w-12 text-center">
                   <input type="checkbox" className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary cursor-pointer" />
                 </th>
-                <th className="py-3.5 px-4">Customer Details</th>
-                <th className="py-3.5 px-4">Contact Phone</th>
-                <th className="py-3.5 px-4">Location</th>
-                <th className="py-3.5 px-4 text-center">Total Orders</th>
-                <th className="py-3.5 px-4 text-right">Lifetime Spend</th>
-                <th className="py-3.5 px-4">Last Activity</th>
-                <th className="py-3.5 px-4 text-center">Status</th>
-                <th className="py-3.5 px-6 text-right">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Customer Details</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Contact Phone</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Location</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Total Orders</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">Lifetime Spend</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Last Activity</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-6 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">

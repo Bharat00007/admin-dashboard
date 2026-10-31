@@ -95,24 +95,24 @@ export const CategoriesPage: React.FC = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-surface-container-lowest rounded-xl p-4 mb-6 shadow-sm border border-outline-variant/30 flex items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
+      <div className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 mb-4 sm:mb-6 shadow-xs border border-outline-variant/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search categories by name, code, or description..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-surface-container-low text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 border border-outline-variant/20"
+            className="w-full pl-10 pr-4 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 border border-outline-variant/20"
           />
         </div>
-        <span className="text-body-sm text-on-surface-variant font-medium">
+        <span className="text-body-sm text-on-surface-variant font-medium shrink-0">
           Showing {filteredCategories.length} Categories
         </span>
       </div>
 
       {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-6">
         {filteredCategories.map(cat => (
           <div 
             key={cat.id}
@@ -193,7 +193,7 @@ export const CategoriesPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
                 Category Code *
@@ -235,7 +235,7 @@ export const CategoriesPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
                 Material Symbol Icon Name

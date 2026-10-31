@@ -40,7 +40,7 @@ export const SellerDetailsPage: React.FC = () => {
 
       {/* Main Profile Header Card */}
       <div className="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant/30 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-start md:items-center gap-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
           <img
             src={seller.logoUrl}
             alt={seller.shopName}
@@ -89,8 +89,8 @@ export const SellerDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* KPI Stat Cards (2-col on mobile, 4-col on desktop) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-xs">
           <span className="text-[12px] font-semibold text-outline uppercase tracking-wider block mb-1">Lifetime GMV</span>
           <div className="flex items-baseline justify-between">
@@ -210,7 +210,7 @@ export const SellerDetailsPage: React.FC = () => {
 
             <div className="divide-y divide-outline-variant/10">
               {products.slice(0, 5).map(prod => (
-                <div key={prod.id} className="py-3 flex items-center justify-between gap-4">
+                <div key={prod.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                   <div className="flex items-center gap-3">
                     <img src={prod.imageUrl} alt={prod.name} className="w-12 h-12 rounded-lg object-cover border border-outline-variant/20" />
                     <div>

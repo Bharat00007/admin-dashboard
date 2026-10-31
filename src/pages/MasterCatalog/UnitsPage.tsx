@@ -89,18 +89,18 @@ export const UnitsPage: React.FC = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-surface-container-lowest rounded-xl p-4 mb-6 shadow-sm border border-outline-variant/30 flex items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
+      <div className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 mb-4 sm:mb-6 shadow-xs border border-outline-variant/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative flex-1 w-full sm:max-w-md">
           <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search units by measurement name, symbol, or type..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg bg-surface-container-low text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 border border-outline-variant/20"
+            className="w-full pl-10 pr-4 py-2 min-h-[40px] rounded-lg bg-surface-container-low text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 border border-outline-variant/20"
           />
         </div>
-        <span className="text-body-sm text-on-surface-variant font-medium">
+        <span className="text-body-sm text-on-surface-variant font-medium shrink-0">
           Showing {filteredUnits.length} Standard Units
         </span>
       </div>
@@ -111,13 +111,13 @@ export const UnitsPage: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider select-none border-b border-outline-variant/20">
-                <th className="py-3.5 px-6">Unit Name</th>
-                <th className="py-3.5 px-4">Standard Code / Symbol</th>
-                <th className="py-3.5 px-4">Dimension Type</th>
-                <th className="py-3.5 px-4 text-center">Decimal Precision</th>
-                <th className="py-3.5 px-4 text-center">Associated Master SKUs</th>
-                <th className="py-3.5 px-4 text-center">Status</th>
-                <th className="py-3.5 px-6 text-right">Actions</th>
+                <th className="py-3.5 px-6 whitespace-nowrap">Unit Name</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Standard Code / Symbol</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Dimension Type</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Decimal Precision</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Associated Master SKUs</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-6 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">
@@ -206,7 +206,7 @@ export const UnitsPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
                 Standard Symbol / Code *
@@ -237,7 +237,7 @@ export const UnitsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
                 Decimal Precision
