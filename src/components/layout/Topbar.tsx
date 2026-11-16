@@ -10,7 +10,6 @@ export const Topbar: React.FC = () => {
   } = useApp();
 
   const { user, logout } = useAuth();
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const getInitials = (name?: string) => {
@@ -100,55 +99,6 @@ export const Topbar: React.FC = () => {
 
       {/* Action Controls */}
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-        {/* Notifications Popover */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={() => setNotificationsOpen(!notificationsOpen)}
-            className="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors relative flex items-center justify-center"
-          >
-            <span className="material-symbols-outlined text-[20px]">notifications</span>
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest" />
-          </button>
-
-          {notificationsOpen && (
-            <div className="absolute right-0 mt-2 w-80 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/30 py-2 z-50 animate-fade-in max-w-[calc(100vw-2rem)]">
-              <div className="px-4 py-2 border-b border-outline-variant/20 flex items-center justify-between">
-                <span className="font-label-md text-label-md font-bold text-on-surface">Notifications</span>
-                <span className="text-[11px] font-semibold text-primary cursor-pointer hover:underline">Mark all read</span>
-              </div>
-              <div className="max-h-64 overflow-y-auto divide-y divide-outline-variant/10">
-                <div className="p-3 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3">
-                  <span className="w-2 h-2 rounded-full bg-secondary-container mt-1.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-label-sm text-label-sm font-semibold text-on-surface">New Seller Application</p>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant">Canine Care &amp; Nutrition applied from Gurgaon.</p>
-                    <span className="text-[10px] text-outline mt-1 block">12 mins ago</span>
-                  </div>
-                </div>
-                <div className="p-3 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3">
-                  <span className="w-2 h-2 rounded-full bg-tertiary mt-1.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-label-sm text-label-sm font-semibold text-on-surface">Payout Batch Completed</p>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant">Settled ₹4.28L across 48 merchant accounts.</p>
-                    <span className="text-[10px] text-outline mt-1 block">1 hr ago</span>
-                  </div>
-                </div>
-                <div className="p-3 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3">
-                  <span className="w-2 h-2 rounded-full bg-error mt-1.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-label-sm text-label-sm font-semibold text-on-surface">Low Stock Alert</p>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant">Whiskas Ocean Fish 1.2kg reached 0 inventory.</p>
-                    <span className="text-[10px] text-outline mt-1 block">3 hrs ago</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="h-6 w-px bg-outline-variant/30" />
-
         {/* Profile Dropdown */}
         <div className="relative">
           <div 

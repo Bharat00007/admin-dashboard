@@ -70,20 +70,12 @@ export const DashboardPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick Operations Pill Bar */}
+        {/* Quick Operations Action */}
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <button 
             type="button"
-            onClick={() => showToast('Catalog Exported', 'Downloaded master catalog specification CSV.')}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 min-h-[40px] rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors shadow-xs active:scale-95"
-          >
-            <span className="material-symbols-outlined text-[18px] text-outline">file_download</span>
-            <span className="whitespace-nowrap">Export Catalog</span>
-          </button>
-          <button 
-            type="button"
             onClick={() => setActiveTab('products')}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-3.5 py-2 min-h-[40px] rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-xs active:scale-95"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 min-h-[40px] rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all shadow-xs active:scale-95"
           >
             <span className="material-symbols-outlined text-[18px]">add_circle</span>
             <span className="whitespace-nowrap">Add Product</span>
