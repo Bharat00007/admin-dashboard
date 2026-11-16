@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 
 export const Topbar: React.FC = () => {
   const { 
     activeTab, 
     setActiveTab, 
-    setIsSearchModalOpen,
-    globalSearch,
     setIsMobileMenuOpen
   } = useApp();
 
+  const { user, logout } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const getInitials = (name?: string) => {
+    if (!name) return 'AD';
+    const parts = name.trim().split(' ').filter(Boolean);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  const handleLogout = async () => {
+    setProfileOpen(false);
+    await logout();
+  };
 
   const getBreadcrumbs = () => {
     switch (activeTab) {
@@ -86,34 +100,6 @@ export const Topbar: React.FC = () => {
 
       {/* Action Controls */}
       <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-        {/* Mobile Search Button */}
-        <button
-          type="button"
-          onClick={() => setIsSearchModalOpen(true)}
-          className="md:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors flex items-center justify-center"
-          title="Search"
-        >
-          <span className="material-symbols-outlined text-[20px]">search</span>
-        </button>
-
-        {/* Quick Search Bar */}
-        <div 
-          onClick={() => setIsSearchModalOpen(true)}
-          className="hidden md:flex relative items-center w-56 lg:w-80 cursor-pointer"
-        >
-          <span className="material-symbols-outlined absolute left-3 text-[18px] text-outline">search</span>
-          <input
-            type="text"
-            readOnly
-            value={globalSearch}
-            placeholder="Search products, sellers, customers..."
-            className="w-full pl-9 pr-14 py-1.5 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-sm font-body-sm text-on-surface placeholder:text-outline cursor-pointer hover:border-primary/50 transition-colors"
-          />
-          <kbd className="absolute right-2 px-1.5 py-0.5 rounded bg-surface-container-high text-outline text-[10px] font-code-sm border border-outline-variant/40">
-            ⌘K
-          </kbd>
-        </div>
-
         {/* Notifications Popover */}
         <div className="relative">
           <button
@@ -170,32 +156,40 @@ export const Topbar: React.FC = () => {
             className="flex items-center gap-2 sm:gap-3 pl-1 cursor-pointer hover:opacity-80 transition-opacity"
           >
             <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-label-md shrink-0 border border-primary/30">
-              SJ
+              {getInitials(user?.name)}
             </div>
             <div className="hidden sm:flex flex-col text-left">
-              <span className="font-label-md text-label-md text-on-surface leading-none font-semibold">Sarah Jenkins</span>
-              <span className="font-label-sm text-label-sm text-on-surface-variant leading-none mt-1">Platform Admin</span>
+              <span className="font-label-md text-label-md text-on-surface leading-none font-semibold truncate max-w-[140px]">
+                {user?.name || 'Administrator'}
+              </span>
+              <span className="font-label-sm text-label-sm text-on-surface-variant leading-none mt-1">
+                {user?.role === 'ADMIN' ? 'Platform Admin' : user?.role || 'Admin'}
+              </span>
             </div>
             <span className="material-symbols-outlined text-[18px] text-outline">keyboard_arrow_down</span>
           </div>
 
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-52 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/30 py-2 z-50 animate-fade-in">
+            <div className="absolute right-0 mt-2 w-56 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/30 py-2 z-50 animate-fade-in">
               <div className="px-4 py-2 border-b border-outline-variant/20">
-                <p className="font-label-sm text-label-sm font-semibold text-on-surface">sarah.jenkins@gotails.in</p>
-                <p className="text-[11px] text-tertiary font-medium">Super Administrator</p>
+                <p className="font-label-sm text-label-sm font-semibold text-on-surface truncate">
+                  {user?.email || 'admin@gotails.com'}
+                </p>
+                <p className="text-[11px] text-tertiary font-medium mt-0.5">
+                  {user?.name || 'Administrator'}
+                </p>
               </div>
               <button 
                 onClick={() => { setActiveTab('dashboard'); setProfileOpen(false); }}
                 className="w-full text-left px-4 py-2 text-body-sm text-on-surface-variant hover:bg-surface-container flex items-center gap-2"
               >
                 <span className="material-symbols-outlined text-[18px]">manage_accounts</span>
-                <span>Account Settings</span>
+                <span>Dashboard Overview</span>
               </button>
               <div className="border-t border-outline-variant/20 my-1" />
               <button 
-                onClick={() => setProfileOpen(false)}
-                className="w-full text-left px-4 py-2 text-body-sm text-error hover:bg-error/10 flex items-center gap-2 font-medium"
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 text-body-sm text-error hover:bg-error/10 flex items-center gap-2 font-medium transition-colors"
               >
                 <span className="material-symbols-outlined text-[18px]">logout</span>
                 <span>Sign Out</span>

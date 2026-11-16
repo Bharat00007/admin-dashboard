@@ -1,27 +1,27 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
 node_modules
-dist-ssr
-*.local
+scripts
+adapters
+.gsd
+.gemini
+.agents
+.agent
+GSD-STYLE.md
+model_capabilities.yaml
+PROJECT_RULES.md
+render.yaml
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# TypeScript build info
-*.tsbuildinfo
-
+FINAL_SECURITY_VERIFICATION_REPORT.md
+FINAL_STAGING_VERIFICATION_REPORT.md
+REMEDIATION_REPORT.md
+task.md
+frontend/netlify.toml
+VERSION
+.impeccable/config.local.json
+audit_report.md
+integration_report.md
+task.md
+integration_summary.md
+final_testing_report.md
+task.md
+tsconfig.tsbuildinfo
+.codex/hooks.json

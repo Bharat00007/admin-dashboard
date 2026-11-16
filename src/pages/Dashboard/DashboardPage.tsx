@@ -2,126 +2,54 @@ import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
 export const DashboardPage: React.FC = () => {
-  const { setActiveTab, setSelectedApprovalId, setSelectedSellerId, showToast } = useApp();
+  const { 
+    setActiveTab, 
+    setSelectedApprovalId, 
+    setSelectedSellerId, 
+    showToast,
+    analytics,
+    sellers,
+    approvals,
+    products,
+    categories,
+    brands,
+    customers,
+    isLoadingData,
+  } = useApp();
+
   const [filterRegion, setFilterRegion] = useState('All Entities');
   const [filterQuery, setFilterQuery] = useState('');
 
-  const pendingApprovalsData = [
-    {
-      id: 'app-501',
-      code: 'PW',
-      shopName: 'Paws & Whiskers Pet Store',
-      ownerName: 'Rajesh Sharma',
-      phone: '+91 98201 44321',
-      city: 'Mumbai',
-      regDate: 'Oct 24, 2024',
-      status: 'Pending Review'
-    },
-    {
-      id: 'app-502',
-      code: 'FP',
-      shopName: 'Furries Paradise Mart',
-      ownerName: 'Ananya Roy',
-      phone: '+91 97112 88902',
-      city: 'Bengaluru',
-      regDate: 'Oct 23, 2024',
-      status: 'Pending Review'
-    },
-    {
-      id: 'app-503',
-      code: 'BA',
-      shopName: 'Bark Avenue Supplies',
-      ownerName: 'Vikram Seth',
-      phone: '+91 98450 12345',
-      city: 'Delhi',
-      regDate: 'Oct 22, 2024',
-      status: 'Pending Review'
-    }
-  ];
+  // Live KPI values from backend
+  const totalSellersCount = analytics ? analytics.activeShopsCount : sellers.filter(s => s.status === 'Active').length;
+  const pendingApprovalsList = approvals.filter(a => a.status === 'Pending');
+  const pendingApprovalsCount = pendingApprovalsList.length;
+  const totalCustomersCount = analytics ? analytics.customerCount : customers.length;
+  const totalProductsCount = products.length;
+  const totalCategoriesCount = categories.length;
+  const totalBrandsCount = brands.length;
 
-  const recentProductsData = [
-    {
-      name: 'Royal Canin Adult Cat Food 2kg',
-      brand: 'Royal Canin',
-      category: 'Cat Nutrition',
-      status: 'Active',
-      added: 'Today'
-    },
-    {
-      name: 'Drools Chicken & Egg Puppy 3kg',
-      brand: 'Drools',
-      category: 'Dog Food',
-      status: 'Active',
-      added: 'Yesterday'
-    },
-    {
-      name: 'Gotails Clumping Cat Litter 10L',
-      brand: 'Gotails Essentials',
-      category: 'Cat Litter',
-      status: 'Active',
-      added: 'Oct 21'
-    },
-    {
-      name: 'Oatmeal Soothing Shampoo 500ml',
-      brand: 'Bio-Groom',
-      category: 'Grooming',
-      status: 'Active',
-      added: 'Oct 20'
-    }
-  ];
-
-  const recentSellersData = [
-    {
-      id: 'SEL-9081',
-      code: 'KH',
-      shopName: 'K9 Haven Specialty Clinic & Shop',
-      contactName: 'Dr. Meera Nambiar',
-      phone: '+91 94471 20993',
-      region: 'Kochi, Kerala',
-      verification: 'Approved',
-      status: 'Open'
-    },
-    {
-      id: 'SEL-9078',
-      code: 'WW',
-      shopName: 'Wag & Walk Retail Hub',
-      contactName: 'Kabir Chawla',
-      phone: '+91 99100 87342',
-      region: 'Gurugram, NCR',
-      verification: 'Approved',
-      status: 'Open'
-    },
-    {
-      id: 'SEL-9075',
-      code: 'PF',
-      shopName: 'Pet Fiesta Gourmet & Care',
-      contactName: 'Sneha Kulkarni',
-      phone: '+91 91672 55431',
-      region: 'Pune, MH',
-      verification: 'Approved',
-      status: 'Open'
-    }
-  ];
-
-  const filteredApprovals = pendingApprovalsData.filter(a => {
+  // Filter pending approvals by search and region
+  const filteredApprovals = pendingApprovalsList.filter(a => {
     const matchesQuery = a.shopName.toLowerCase().includes(filterQuery.toLowerCase()) ||
-                         a.ownerName.toLowerCase().includes(filterQuery.toLowerCase()) ||
+                         a.applicantName.toLowerCase().includes(filterQuery.toLowerCase()) ||
                          a.city.toLowerCase().includes(filterQuery.toLowerCase());
     const matchesRegion = filterRegion === 'All Entities' ? true :
-                          filterRegion === 'Bengaluru' ? a.city.includes('Bengaluru') :
-                          filterRegion === 'Mumbai' ? a.city.includes('Mumbai') :
-                          filterRegion === 'Delhi NCR' ? (a.city.includes('Delhi') || a.city.includes('Gurgaon')) : true;
+                          filterRegion === 'Bengaluru' ? a.city.toLowerCase().includes('bengaluru') || a.city.toLowerCase().includes('bangalore') :
+                          filterRegion === 'Mumbai' ? a.city.toLowerCase().includes('mumbai') :
+                          filterRegion === 'Delhi NCR' ? (a.city.toLowerCase().includes('delhi') || a.city.toLowerCase().includes('ncr') || a.city.toLowerCase().includes('gurgaon')) : true;
     return matchesQuery && matchesRegion;
   });
 
-  const filteredSellers = recentSellersData.filter(s => {
+  // Filter registered sellers by search and region
+  const filteredSellers = sellers.filter(s => {
     const matchesQuery = s.shopName.toLowerCase().includes(filterQuery.toLowerCase()) ||
-                         s.contactName.toLowerCase().includes(filterQuery.toLowerCase()) ||
-                         s.region.toLowerCase().includes(filterQuery.toLowerCase());
+                         s.ownerName.toLowerCase().includes(filterQuery.toLowerCase()) ||
+                         s.city.toLowerCase().includes(filterQuery.toLowerCase());
     const matchesRegion = filterRegion === 'All Entities' ? true :
-                          filterRegion === 'Bengaluru' ? s.region.includes('Bengaluru') :
-                          filterRegion === 'Mumbai' ? s.region.includes('Mumbai') :
-                          filterRegion === 'Delhi NCR' ? s.region.includes('NCR') : true;
+                          filterRegion === 'Bengaluru' ? s.city.toLowerCase().includes('bengaluru') || s.city.toLowerCase().includes('bangalore') :
+                          filterRegion === 'Mumbai' ? s.city.toLowerCase().includes('mumbai') :
+                          filterRegion === 'Delhi NCR' ? (s.city.toLowerCase().includes('delhi') || s.city.toLowerCase().includes('ncr') || s.city.toLowerCase().includes('gurgaon')) : true;
     return matchesQuery && matchesRegion;
   });
 
@@ -133,8 +61,8 @@ export const DashboardPage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold tracking-tight">Dashboard</h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold select-none">
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse" />
-              Live Sync
+              <span className={`w-1.5 h-1.5 rounded-full bg-tertiary ${isLoadingData ? 'animate-ping' : 'animate-pulse'}`} />
+              {isLoadingData ? 'Syncing...' : 'Live Sync'}
             </span>
           </div>
           <p className="font-body-sm sm:font-body-md text-body-sm sm:text-body-md text-on-surface-variant mt-0.5 sm:mt-1">
@@ -171,16 +99,18 @@ export const DashboardPage: React.FC = () => {
           className="bg-surface-container-lowest rounded-xl p-3.5 sm:p-4 shadow-xs flex flex-col justify-between hover:shadow-md transition-all cursor-pointer border border-outline-variant/20 active:scale-98"
         >
           <div className="flex items-center justify-between gap-1">
-            <span className="font-label-sm text-[11px] sm:text-label-sm uppercase tracking-wider text-on-surface-variant font-bold truncate">Total Sellers</span>
+            <span className="font-label-sm text-[11px] sm:text-label-sm uppercase tracking-wider text-on-surface-variant font-bold truncate">Active Sellers</span>
             <div className="w-7 h-7 sm:w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary shrink-0">
               <span className="material-symbols-outlined text-[16px] sm:text-[18px]">store</span>
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">142</div>
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">
+              {isLoadingData ? '...' : totalSellersCount}
+            </div>
             <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-tertiary text-[11px] sm:text-label-sm font-semibold truncate">
-              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">arrow_upward</span>
-              <span>+8 this week</span>
+              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">storefront</span>
+              <span>{sellers.length} registered</span>
             </div>
           </div>
         </div>
@@ -198,8 +128,12 @@ export const DashboardPage: React.FC = () => {
           </div>
           <div className="mt-2.5 sm:mt-3">
             <div className="flex items-baseline gap-1.5 sm:gap-2">
-              <span className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-secondary font-bold leading-none">5</span>
-              <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-[10px] sm:text-label-sm font-semibold">Action Req.</span>
+              <span className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-secondary font-bold leading-none">
+                {isLoadingData ? '...' : pendingApprovalsCount}
+              </span>
+              {pendingApprovalsCount > 0 && (
+                <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-secondary-container/20 text-secondary text-[10px] sm:text-label-sm font-semibold">Action Req.</span>
+              )}
             </div>
             <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-secondary text-[11px] sm:text-label-sm group-hover:translate-x-0.5 transition-transform font-semibold truncate">
               <span>Review requests</span>
@@ -220,10 +154,12 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">4,892</div>
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">
+              {isLoadingData ? '...' : totalCustomersCount}
+            </div>
             <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-tertiary text-[11px] sm:text-label-sm font-semibold truncate">
-              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">arrow_upward</span>
-              <span>+124 this month</span>
+              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">verified_user</span>
+              <span>Active users</span>
             </div>
           </div>
         </div>
@@ -240,10 +176,12 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">1,280</div>
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">
+              {isLoadingData ? '...' : totalProductsCount}
+            </div>
             <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-on-surface-variant text-[11px] sm:text-label-sm truncate">
               <span className="material-symbols-outlined text-[13px] sm:text-[14px] text-tertiary font-bold">check_circle</span>
-              <span>99.4% in-stock</span>
+              <span>Platform SKUs</span>
             </div>
           </div>
         </div>
@@ -260,9 +198,11 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">24</div>
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">
+              {isLoadingData ? '...' : totalCategoriesCount}
+            </div>
             <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-on-surface-variant text-[11px] sm:text-label-sm truncate">
-              <span>8 Primary / 16 Sub</span>
+              <span>Active Taxonomies</span>
             </div>
           </div>
         </div>
@@ -279,10 +219,12 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">86</div>
+            <div className="font-headline-lg sm:font-headline-xl text-headline-lg sm:text-headline-xl text-on-surface font-bold leading-none">
+              {isLoadingData ? '...' : totalBrandsCount}
+            </div>
             <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-tertiary text-[11px] sm:text-label-sm font-semibold truncate">
-              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">new_releases</span>
-              <span>+3 verified</span>
+              <span className="material-symbols-outlined text-[13px] sm:text-[14px]">verified</span>
+              <span>Verified Partners</span>
             </div>
           </div>
         </div>
@@ -320,7 +262,7 @@ export const DashboardPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-2 text-body-sm font-body-sm text-on-surface-variant shrink-0">
           <span className="w-2 h-2 rounded-full bg-tertiary" />
-          <span>Gateway Health: 100% Operational</span>
+          <span>Production Gateway: 100% Operational</span>
         </div>
       </div>
 
@@ -349,76 +291,84 @@ export const DashboardPage: React.FC = () => {
 
           {/* Table Container */}
           <div className="overflow-x-auto w-full">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
-                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Shop &amp; Seller</th>
-                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Contact &amp; City</th>
-                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Reg Date</th>
-                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Status</th>
-                  <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
-                {filteredApprovals.map((app) => (
-                  <tr key={app.id} className="hover:bg-surface-container-low/60 transition-colors">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold font-label-md text-label-md shrink-0">
-                          {app.code}
-                        </div>
-                        <div className="min-w-0">
-                          <p 
-                            onClick={() => { setSelectedApprovalId(app.id); setActiveTab('approval-details'); }}
-                            className="font-label-md text-label-md text-on-surface truncate font-semibold hover:text-primary cursor-pointer"
-                          >
-                            {app.shopName}
-                          </p>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant truncate">{app.ownerName}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="flex flex-col">
-                        <span className="font-code-sm text-code-sm text-on-surface">{app.phone}</span>
-                        <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[12px] text-outline">location_on</span>
-                          {app.city}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-on-surface font-body-sm text-body-sm whitespace-nowrap">
-                      {app.regDate}
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                        {app.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
-                      <button 
-                        type="button"
-                        onClick={() => { setSelectedApprovalId(app.id); setActiveTab('approval-details'); }}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold transition-colors shadow-xs active:scale-95"
-                      >
-                        <span>Review</span>
-                        <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-                      </button>
-                    </td>
+            {filteredApprovals.length === 0 ? (
+              <div className="p-8 text-center text-on-surface-variant">
+                <span className="material-symbols-outlined text-[32px] text-outline mb-1">task_alt</span>
+                <p className="font-label-md font-semibold text-on-surface">No pending approvals</p>
+                <p className="text-body-sm text-outline mt-0.5">All seller onboarding applications are currently up-to-date.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
+                    <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Shop &amp; Seller</th>
+                    <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Contact &amp; City</th>
+                    <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Reg Date</th>
+                    <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Status</th>
+                    <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
+                  {filteredApprovals.slice(0, 5).map((app) => (
+                    <tr key={app.id} className="hover:bg-surface-container-low/60 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-primary font-bold font-label-md text-label-md shrink-0">
+                            {app.shopName.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <p 
+                              onClick={() => { setSelectedApprovalId(app.id); setActiveTab('approval-details'); }}
+                              className="font-label-md text-label-md text-on-surface truncate font-semibold hover:text-primary cursor-pointer"
+                            >
+                              {app.shopName}
+                            </p>
+                            <p className="font-body-sm text-body-sm text-on-surface-variant truncate">{app.applicantName}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-code-sm text-code-sm text-on-surface">{app.phone}</span>
+                          <span className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[12px] text-outline">location_on</span>
+                            {app.city}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-on-surface font-body-sm text-body-sm whitespace-nowrap">
+                        {app.appliedDate}
+                      </td>
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-container/20 text-secondary font-label-sm text-label-sm font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                          {app.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <button 
+                          type="button"
+                          onClick={() => { setSelectedApprovalId(app.id); setActiveTab('approval-details'); }}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm font-semibold transition-colors shadow-xs active:scale-95"
+                        >
+                          <span>Review</span>
+                          <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
           <div className="p-3 bg-surface-container-low flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant mt-auto border-t border-outline-variant/20">
-            <span>Showing {filteredApprovals.length} of 5 pending shop verifications</span>
+            <span>Showing {Math.min(filteredApprovals.length, 5)} of {pendingApprovalsCount} pending shop verifications</span>
             <button 
               type="button"
               onClick={() => setActiveTab('approvals')}
               className="text-primary font-label-sm text-label-sm font-semibold hover:underline"
             >
-              Process Batch Queue
+              View Approvals Pipeline
             </button>
           </div>
         </div>
@@ -431,7 +381,7 @@ export const DashboardPage: React.FC = () => {
                 <span className="material-symbols-outlined text-[18px]">shelves</span>
               </div>
               <div>
-                <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Recently Added Products</h2>
+                <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Catalog Products</h2>
                 <p className="font-label-sm text-label-sm text-on-surface-variant">Master SKU registry sync</p>
               </div>
             </div>
@@ -446,56 +396,68 @@ export const DashboardPage: React.FC = () => {
 
           {/* Table Container */}
           <div className="overflow-x-auto w-full">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
-                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Product Name</th>
-                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Category</th>
-                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Status</th>
-                  <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Added</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
-                {recentProductsData.map((prod, idx) => (
-                  <tr key={idx} className="hover:bg-surface-container-low/60 transition-colors">
-                    <td className="py-2.5 px-4">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded bg-surface-container flex items-center justify-center text-outline shrink-0">
-                          <span className="material-symbols-outlined text-[16px]">pets</span>
-                        </div>
-                        <div className="min-w-0">
-                          <p 
-                            onClick={() => setActiveTab('products')}
-                            className="font-label-md text-label-md text-on-surface truncate font-semibold hover:text-primary cursor-pointer"
-                          >
-                            {prod.name}
-                          </p>
-                          <p className="font-body-sm text-body-sm text-on-surface-variant">{prod.brand}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-2.5 px-4 text-on-surface whitespace-nowrap">{prod.category}</td>
-                    <td className="py-2.5 px-4 whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold">
-                        {prod.status}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-4 text-right text-on-surface-variant font-code-sm text-code-sm whitespace-nowrap font-medium">
-                      {prod.added}
-                    </td>
+            {products.length === 0 ? (
+              <div className="p-8 text-center text-on-surface-variant">
+                <span className="material-symbols-outlined text-[32px] text-outline mb-1">inventory_2</span>
+                <p className="font-label-md font-semibold text-on-surface">No products listed</p>
+                <p className="text-body-sm text-outline mt-0.5">Click "Add Product" to create your first SKU.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
+                    <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Product Name</th>
+                    <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Category</th>
+                    <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Status</th>
+                    <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Unit</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
+                  {products.slice(0, 5).map((prod) => (
+                    <tr key={prod.id} className="hover:bg-surface-container-low/60 transition-colors">
+                      <td className="py-2.5 px-4">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <img
+                            src={prod.imageUrl}
+                            alt={prod.name}
+                            className="w-7 h-7 rounded object-cover border border-outline-variant/20 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p 
+                              onClick={() => setActiveTab('products')}
+                              className="font-label-md text-label-md text-on-surface truncate font-semibold hover:text-primary cursor-pointer"
+                            >
+                              {prod.name}
+                            </p>
+                            <p className="font-body-sm text-body-sm text-on-surface-variant">{prod.brand}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-4 text-on-surface whitespace-nowrap">{prod.category}</td>
+                      <td className="py-2.5 px-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold ${
+                          prod.status === 'Active' ? 'bg-tertiary/10 text-tertiary' : 'bg-surface-container text-outline'
+                        }`}>
+                          {prod.status}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-4 text-right text-on-surface-variant font-code-sm text-code-sm whitespace-nowrap font-medium">
+                        {prod.unit}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
           <div className="p-3 bg-surface-container-low flex items-center justify-between text-body-sm font-body-sm text-on-surface-variant mt-auto border-t border-outline-variant/20">
-            <span>Catalog version: v14.9 synced</span>
+            <span>{products.length} live SKUs registered</span>
             <button 
               type="button"
               onClick={() => setActiveTab('products')}
               className="text-primary font-label-sm text-label-sm font-semibold hover:underline"
             >
-              Bulk Stock Update
+              Manage Catalog
             </button>
           </div>
         </div>
@@ -509,14 +471,14 @@ export const DashboardPage: React.FC = () => {
               <span className="material-symbols-outlined text-[18px]">storefront</span>
             </div>
             <div>
-              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Recently Registered &amp; Onboarded Sellers</h2>
-              <p className="font-label-sm text-label-sm text-on-surface-variant">Active marketplace merchant nodes with live store fronts</p>
+              <h2 className="font-headline-sm text-headline-sm text-on-surface font-bold">Marketplace Sellers &amp; Outlets</h2>
+              <p className="font-label-sm text-label-sm text-on-surface-variant">Merchant storefront nodes across regional fulfillment clusters</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse" />
-              <span>137 Live Outlets</span>
+              <span>{sellers.filter(s => s.status === 'Active').length} Live Outlets</span>
             </div>
             <button
               onClick={() => setActiveTab('sellers')}
@@ -530,92 +492,98 @@ export const DashboardPage: React.FC = () => {
 
         {/* Full Data Table */}
         <div className="overflow-x-auto w-full">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
-                <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Store Identifier</th>
-                <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Primary Contact</th>
-                <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Region / Hub</th>
-                <th className="py-2.5 px-4 font-semibold text-center whitespace-nowrap">Verification</th>
-                <th className="py-2.5 px-4 font-semibold text-center whitespace-nowrap">Store Status</th>
-                <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
-              {filteredSellers.map((seller) => (
-                <tr key={seller.id} className="hover:bg-surface-container-low/60 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-label-sm font-label-sm">
-                        {seller.code}
-                      </div>
-                      <div>
-                        <p 
-                          onClick={() => { setSelectedSellerId('sel-101'); setActiveTab('seller-details'); }}
-                          className="font-label-md text-label-md text-on-surface font-semibold hover:text-primary cursor-pointer"
-                        >
-                          {seller.shopName}
-                        </p>
-                        <p className="font-code-sm text-code-sm text-on-surface-variant">ID: {seller.id}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <p className="text-on-surface font-medium">{seller.contactName}</p>
-                    <p className="font-code-sm text-code-sm text-on-surface-variant">{seller.phone}</p>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-1 text-on-surface">
-                      <span className="material-symbols-outlined text-[14px] text-outline">location_on</span>
-                      <span>{seller.region}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 text-center whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm font-semibold">
-                      <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                      {seller.verification}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-center whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-tertiary/15 text-tertiary font-label-sm text-label-sm font-bold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse" />
-                      {seller.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right whitespace-nowrap">
-                    <div className="flex items-center justify-end gap-2">
-                      <button 
-                        type="button"
-                        onClick={() => { setSelectedSellerId('sel-101'); setActiveTab('seller-details'); }}
-                        className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" 
-                        title="View Storefront"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">visibility</span>
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => { setSelectedSellerId('sel-101'); setActiveTab('seller-details'); }}
-                        className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" 
-                        title="Settings"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">more_vert</span>
-                      </button>
-                    </div>
-                  </td>
+          {filteredSellers.length === 0 ? (
+            <div className="p-8 text-center text-on-surface-variant">
+              <span className="material-symbols-outlined text-[32px] text-outline mb-1">store</span>
+              <p className="font-label-md font-semibold text-on-surface">No sellers found</p>
+              <p className="text-body-sm text-outline mt-0.5">Approved merchant shops will appear in this directory.</p>
+            </div>
+          ) : (
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm tracking-wider uppercase border-b border-outline-variant/20">
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Store Identifier</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Primary Contact</th>
+                  <th className="py-2.5 px-4 font-semibold whitespace-nowrap">Region / Hub</th>
+                  <th className="py-2.5 px-4 font-semibold text-center whitespace-nowrap">Verification</th>
+                  <th className="py-2.5 px-4 font-semibold text-center whitespace-nowrap">Store Status</th>
+                  <th className="py-2.5 px-4 font-semibold text-right whitespace-nowrap">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
+                {filteredSellers.slice(0, 5).map((seller) => (
+                  <tr key={seller.id} className="hover:bg-surface-container-low/60 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-label-sm font-label-sm">
+                          {seller.shopName.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p 
+                            onClick={() => { setSelectedSellerId(seller.id); setActiveTab('seller-details'); }}
+                            className="font-label-md text-label-md text-on-surface font-semibold hover:text-primary cursor-pointer"
+                          >
+                            {seller.shopName}
+                          </p>
+                          <p className="font-code-sm text-code-sm text-on-surface-variant">ID: {seller.id.slice(-6).toUpperCase()}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <p className="text-on-surface font-medium">{seller.ownerName}</p>
+                      <p className="font-code-sm text-code-sm text-on-surface-variant">{seller.phone}</p>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-1 text-on-surface">
+                        <span className="material-symbols-outlined text-[14px] text-outline">location_on</span>
+                        <span>{seller.city}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-semibold ${
+                        seller.kycStatus === 'Verified' ? 'bg-tertiary/10 text-tertiary' : 'bg-secondary-container/20 text-secondary'
+                      }`}>
+                        <span className="material-symbols-outlined text-[13px]">
+                          {seller.kycStatus === 'Verified' ? 'check_circle' : 'pending'}
+                        </span>
+                        {seller.kycStatus}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-bold ${
+                        seller.status === 'Active' ? 'bg-tertiary/15 text-tertiary' : 'bg-error/10 text-error'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${seller.status === 'Active' ? 'bg-tertiary animate-pulse' : 'bg-error'}`} />
+                        {seller.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        <button 
+                          type="button"
+                          onClick={() => { setSelectedSellerId(seller.id); setActiveTab('seller-details'); }}
+                          className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" 
+                          title="View Storefront"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">visibility</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Bottom Compliance Status Bar */}
         <div className="p-3 sm:p-4 bg-surface-container-low flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-body-sm font-body-sm text-on-surface-variant border-t border-outline-variant/20">
           <div className="flex flex-wrap items-center gap-2">
             <span className="material-symbols-outlined text-[16px] text-tertiary font-bold">check</span>
-            <span>All newly registered stores comply with Pet Care Goods &amp; Services Guidelines (2024).</span>
+            <span>All registered stores operate under Quick Commerce Compliance Guidelines.</span>
           </div>
           <div 
-            onClick={() => showToast('Audit Downloaded', 'Audit compliance manifest v2.4 saved.')}
+            onClick={() => showToast('Audit Downloaded', 'Audit compliance manifest saved.')}
             className="flex items-center gap-1 font-label-sm text-label-sm font-semibold text-primary cursor-pointer hover:underline"
           >
             <span>Download Onboarding Audit Log</span>

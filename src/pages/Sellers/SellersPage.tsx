@@ -99,10 +99,7 @@ export const SellersPage: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider select-none border-b border-outline-variant/20">
-                <th className="py-3.5 px-4 w-12 text-center">
-                  <input type="checkbox" className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary cursor-pointer" />
-                </th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Store &amp; Brand</th>
+                <th className="py-3.5 px-6 whitespace-nowrap">Store &amp; Brand</th>
                 <th className="py-3.5 px-4 whitespace-nowrap">Owner Contact</th>
                 <th className="py-3.5 px-4 whitespace-nowrap">Location</th>
                 <th className="py-3.5 px-4 text-center whitespace-nowrap">Rating</th>
@@ -114,25 +111,31 @@ export const SellersPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">
-              {filteredSellers.map(s => (
-                <tr key={s.id} className="hover:bg-surface-container-low/60 transition-colors group">
-                  <td className="py-3.5 px-4 text-center">
-                    <input type="checkbox" className="w-4 h-4 rounded text-primary accent-primary cursor-pointer" />
+              {filteredSellers.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="py-12 text-center text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[40px] text-outline mb-2">storefront</span>
+                    <p className="font-body-md font-semibold text-on-surface">No merchant storefronts found</p>
+                    <p className="text-body-sm text-outline mt-0.5">Try adjusting your search criteria or status filter.</p>
                   </td>
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-3">
-                      <img className="w-10 h-10 rounded-full object-cover border border-outline-variant/30 flex-shrink-0" src={s.logoUrl} alt={s.shopName} />
-                      <div>
-                        <span 
-                          onClick={() => handleViewSeller(s)}
-                          className="font-bold text-on-surface hover:text-primary cursor-pointer transition-colors block"
-                        >
-                          {s.shopName}
-                        </span>
-                        <span className="font-code-sm text-outline text-[11px] block">{s.id}</span>
+                </tr>
+              ) : (
+                filteredSellers.map(s => (
+                  <tr key={s.id} className="hover:bg-surface-container-low/60 transition-colors group">
+                    <td className="py-3.5 px-6">
+                      <div className="flex items-center gap-3">
+                        <img className="w-10 h-10 rounded-full object-cover border border-outline-variant/30 flex-shrink-0" src={s.logoUrl} alt={s.shopName} />
+                        <div>
+                          <span 
+                            onClick={() => handleViewSeller(s)}
+                            className="font-bold text-on-surface hover:text-primary cursor-pointer transition-colors block"
+                          >
+                            {s.shopName}
+                          </span>
+                          <span className="font-code-sm text-outline text-[11px] block">{s.id}</span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
                   <td className="py-3.5 px-4">
                     <div className="flex flex-col">
                       <span className="font-semibold text-on-surface">{s.ownerName}</span>
@@ -196,7 +199,7 @@ export const SellersPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

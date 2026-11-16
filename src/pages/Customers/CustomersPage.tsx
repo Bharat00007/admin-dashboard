@@ -12,6 +12,8 @@ export const CustomersPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [banConfirmOpen, setBanConfirmOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const filteredCustomers = customers.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -24,13 +26,26 @@ export const CustomersPage: React.FC = () => {
 
   const handleInitiateBan = (c: Customer) => {
     setSelectedCustomer(c);
+    setActionError(null);
     setBanConfirmOpen(true);
   };
 
-  const handleConfirmBan = () => {
-    if (selectedCustomer) {
-      toggleCustomerBan(selectedCustomer.id);
-      setBanConfirmOpen(false);
+  const handleConfirmBan = async () => {
+    if (!selectedCustomer || isProcessing) return;
+    setIsProcessing(true);
+    setActionError(null);
+    try {
+      const success = await toggleCustomerBan(selectedCustomer.id);
+      if (success) {
+        setBanConfirmOpen(false);
+        setSelectedCustomer(null);
+      } else {
+        setActionError('Failed to update customer status. The backend rejected the operation.');
+      }
+    } catch (err: any) {
+      setActionError(err?.message || 'An unexpected network error occurred.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -108,10 +123,7 @@ export const CustomersPage: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider select-none border-b border-outline-variant/20">
-                <th className="py-3.5 px-4 w-12 text-center">
-                  <input type="checkbox" className="w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary cursor-pointer" />
-                </th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Customer Details</th>
+                <th className="py-3.5 px-6 whitespace-nowrap">Customer Details</th>
                 <th className="py-3.5 px-4 whitespace-nowrap">Contact Phone</th>
                 <th className="py-3.5 px-4 whitespace-nowrap">Location</th>
                 <th className="py-3.5 px-4 text-center whitespace-nowrap">Total Orders</th>
@@ -122,12 +134,18 @@ export const CustomersPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">
-              {filteredCustomers.map(c => (
-                <tr key={c.id} className="hover:bg-surface-container-low/60 transition-colors group">
-                  <td className="py-3.5 px-4 text-center">
-                    <input type="checkbox" className="w-4 h-4 rounded text-primary accent-primary cursor-pointer" />
+              {filteredCustomers.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[40px] text-outline mb-2">person_search</span>
+                    <p className="font-body-md font-semibold text-on-surface">No customer accounts found</p>
+                    <p className="text-body-sm text-outline mt-0.5">Try adjusting your search criteria or status filter.</p>
                   </td>
-                  <td className="py-3.5 px-4">
+                </tr>
+              ) : (
+                filteredCustomers.map(c => (
+                <tr key={c.id} className="hover:bg-surface-container-low/60 transition-colors group">
+                  <td className="py-3.5 px-6">
                     <div className="flex items-center gap-3">
                       <img className="w-10 h-10 rounded-full object-cover border border-outline-variant/30 flex-shrink-0" src={c.avatarUrl} alt={c.name} />
                       <div>
@@ -176,7 +194,7 @@ export const CustomersPage: React.FC = () => {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
@@ -185,30 +203,91 @@ export const CustomersPage: React.FC = () => {
       {/* Ban / Restore Confirmation Dialog */}
       <Modal
         isOpen={banConfirmOpen}
-        onClose={() => setBanConfirmOpen(false)}
+        onClose={() => {
+          if (!isProcessing) {
+            setBanConfirmOpen(false);
+            setActionError(null);
+          }
+        }}
         title={selectedCustomer?.status === 'Active' ? 'Restrict Customer Account' : 'Restore Customer Access'}
-        subtitle={`Action for user ${selectedCustomer?.name} (${selectedCustomer?.email})`}
+        subtitle={`Action for ${selectedCustomer?.name || 'Customer'} (${selectedCustomer?.phone})`}
         maxWidth="md"
         footer={
-          <>
-            <Button variant="secondary" onClick={() => setBanConfirmOpen(false)}>
+          <div className="flex items-center justify-end gap-2 w-full">
+            <Button 
+              variant="secondary" 
+              onClick={() => {
+                setBanConfirmOpen(false);
+                setActionError(null);
+              }}
+              disabled={isProcessing}
+            >
               Cancel
             </Button>
             <Button 
               variant={selectedCustomer?.status === 'Active' ? 'danger' : 'primary'}
               onClick={handleConfirmBan}
+              disabled={isProcessing}
             >
-              {selectedCustomer?.status === 'Active' ? 'Confirm Ban' : 'Restore Account'}
+              {isProcessing ? (
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Processing...</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">
+                    {selectedCustomer?.status === 'Active' ? 'block' : 'check_circle'}
+                  </span>
+                  <span>{selectedCustomer?.status === 'Active' ? 'Confirm Ban' : 'Restore Account'}</span>
+                </div>
+              )}
             </Button>
-          </>
+          </div>
         }
       >
-        <p className="text-body-md text-on-surface-variant leading-relaxed">
-          {selectedCustomer?.status === 'Active'
-            ? `Are you sure you want to suspend ${selectedCustomer?.name}? They will be blocked from placing new orders or accessing their saved payment options.`
-            : `Are you sure you want to re-activate access for ${selectedCustomer?.name}? Their account will immediately return to active standing.`
-          }
-        </p>
+        <div className="space-y-4">
+          {/* Customer summary card */}
+          {selectedCustomer && (
+            <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-3">
+              <img 
+                src={selectedCustomer.avatarUrl} 
+                alt={selectedCustomer.name} 
+                className="w-12 h-12 rounded-full object-cover border border-outline-variant/30 shrink-0" 
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-on-surface truncate block">{selectedCustomer.name}</span>
+                  <Badge variant={selectedCustomer.status === 'Active' ? 'success' : 'error'}>
+                    Current: {selectedCustomer.status}
+                  </Badge>
+                </div>
+                <span className="text-body-xs font-code-sm text-outline block truncate">{selectedCustomer.email}</span>
+                <span className="text-body-xs font-code-sm text-on-surface-variant block mt-0.5">
+                  Mobile: {selectedCustomer.phone}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <p className="text-body-md text-on-surface-variant leading-relaxed">
+            {selectedCustomer?.status === 'Active'
+              ? `Are you sure you want to suspend access for ${selectedCustomer?.name}? This customer will be immediately blocked from logging in, checking out, and placing new orders across all GoTails stores.`
+              : `Are you sure you want to restore access for ${selectedCustomer?.name}? Their account standing will be set to ACTIVE immediately, restoring full ordering and checkout privileges.`
+            }
+          </p>
+
+          {/* Action Error Banner */}
+          {actionError && (
+            <div className="p-3 rounded-lg bg-error-container/20 border border-error/30 text-error flex items-start gap-2.5 text-body-sm">
+              <span className="material-symbols-outlined text-[18px] shrink-0 mt-0.5">error</span>
+              <div>
+                <span className="font-semibold block">Operation Failed</span>
+                <span className="text-body-xs text-on-surface-variant">{actionError}</span>
+              </div>
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );

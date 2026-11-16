@@ -83,7 +83,15 @@ export const SellerDetailsPage: React.FC = () => {
             </span>
             <span>{seller.status === 'Active' ? 'Ban Merchant Store' : 'Unban Store'}</span>
           </button>
-          <Button variant="secondary" icon="mail">
+          <Button 
+            variant="secondary" 
+            icon="mail"
+            onClick={() => {
+              if (seller.email) {
+                window.location.href = `mailto:${seller.email}?subject=GoTails%20Marketplace%20Platform%20Notice%20-%20${encodeURIComponent(seller.shopName)}`;
+              }
+            }}
+          >
             Contact Owner
           </Button>
         </div>

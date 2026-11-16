@@ -87,7 +87,16 @@ export const SellerApprovalsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">
-              {filteredApprovals.map(req => (
+              {filteredApprovals.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[40px] text-outline mb-2">check_circle</span>
+                    <p className="font-body-md font-semibold text-on-surface">No applications in this review pipeline</p>
+                    <p className="text-body-sm text-outline mt-0.5">All applications matching your filter have been addressed.</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredApprovals.map(req => (
                 <tr key={req.id} className="hover:bg-surface-container-low/60 transition-colors group">
                   <td className="py-3.5 px-6 font-bold text-on-surface">
                     <span 
@@ -156,7 +165,7 @@ export const SellerApprovalsPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

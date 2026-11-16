@@ -209,12 +209,20 @@ export const SellerApprovalDetailsPage: React.FC = () => {
             <h4 className="font-headline-sm font-bold text-on-surface">{inspectDoc}</h4>
             <p className="font-code-sm text-outline text-body-sm mt-1">Verified against statutory register • All signatures and stamps authentic.</p>
             <div className="mt-6 flex justify-center gap-3">
-              <Button variant="secondary" size="sm" icon="download">
-                Download PDF
-              </Button>
-              <Button variant="primary" size="sm" icon="verified">
-                Mark as Confirmed
-              </Button>
+              {req.verificationFiles && req.verificationFiles.length > 0 && req.verificationFiles[0].fileUrl ? (
+                <Button 
+                  variant="primary" 
+                  size="sm" 
+                  icon="open_in_new"
+                  onClick={() => window.open(req.verificationFiles![0].fileUrl, '_blank')}
+                >
+                  Open Original Document in New Tab
+                </Button>
+              ) : (
+                <Button variant="secondary" size="sm" icon="verified">
+                  Digital Record Verified
+                </Button>
+              )}
             </div>
           </div>
         </Modal>

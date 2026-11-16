@@ -1,3 +1,5 @@
+export * from './auth';
+
 export type TabType = 
   | 'dashboard'
   | 'products'
@@ -120,5 +122,10 @@ export interface SellerApprovalRequest {
   storeAddress: string;
   catalogCategory: string;
   remarks?: string;
+  verificationFiles?: Array<{
+    documentType: string;
+    documentNumber?: string | null;
+    fileUrl: string;
+  }>;
 }
 

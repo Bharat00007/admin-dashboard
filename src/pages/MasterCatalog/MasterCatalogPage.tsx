@@ -4,6 +4,7 @@ import { Product } from '../../types';
 import { Modal } from '../../components/ui/Modal';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { ImageUpload } from '../../components/ui/ImageUpload';
 
 export const MasterCatalogPage: React.FC = () => {
   const { 
@@ -40,13 +41,13 @@ export const MasterCatalogPage: React.FC = () => {
     setActiveProduct(null);
     setFormName('');
     setFormSku(`SKU-GT-${Math.floor(100000 + Math.random() * 900000)}`);
-    setFormBrand(brands[0]?.name || 'Gotails Essentials');
-    setFormCategory(categories[0]?.name || 'Dog Food');
+    setFormBrand(brands[0]?.name || 'Partner Brand');
+    setFormCategory(categories[0]?.name || 'General');
     setFormUnit(units[0]?.name || 'Kilogram (kg)');
     setFormDescription('');
     setFormStatus('Active');
     setFormPrice(499);
-    setFormImageUrl('https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&auto=format&fit=crop&q=80');
+    setFormImageUrl('');
     setModalType('add');
   };
 
@@ -451,32 +452,28 @@ export const MasterCatalogPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
-                Image URL
-              </label>
-              <input
-                type="text"
-                value={formImageUrl}
-                onChange={(e) => setFormImageUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-sm font-body-sm focus:border-primary focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
-                Catalog Status
-              </label>
-              <select
-                value={formStatus}
-                onChange={(e) => setFormStatus(e.target.value as 'Active' | 'Inactive')}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-md font-body-md focus:border-primary focus:outline-none"
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
+          {/* Product Image Upload Interface */}
+          <div className="pt-1">
+            <ImageUpload
+              label="Product Image"
+              value={formImageUrl}
+              onChange={(url) => setFormImageUrl(url)}
+              helperText="Upload JPG, PNG, or WEBP (Max 1MB). Image uploads directly to GoTails cloud storage."
+            />
+          </div>
+
+          <div>
+            <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
+              Catalog Status
+            </label>
+            <select
+              value={formStatus}
+              onChange={(e) => setFormStatus(e.target.value as 'Active' | 'Inactive')}
+              className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-md font-body-md focus:border-primary focus:outline-none"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
         </form>
       </Modal>
@@ -490,9 +487,22 @@ export const MasterCatalogPage: React.FC = () => {
           subtitle={activeProduct.sku}
           maxWidth="md"
           footer={
-            <Button variant="secondary" onClick={() => setModalType('none')}>
-              Close
-            </Button>
+            <div className="flex items-center justify-end gap-2 w-full">
+              <Button variant="secondary" onClick={() => setModalType('none')}>
+                Close
+              </Button>
+              <Button
+                variant="primary"
+                icon="edit_square"
+                onClick={() => {
+                  const prod = activeProduct;
+                  setModalType('none');
+                  openEditModal(prod);
+                }}
+              >
+                Edit Product
+              </Button>
+            </div>
           }
         >
           <div className="space-y-4">

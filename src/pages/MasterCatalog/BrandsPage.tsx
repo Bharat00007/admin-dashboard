@@ -4,6 +4,8 @@ import { Brand } from '../../types';
 import { Modal } from '../../components/ui/Modal';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { ImageUpload } from '../../components/ui/ImageUpload';
+import { uploadService } from '../../services/uploadService';
 
 export const BrandsPage: React.FC = () => {
   const { brands, addBrand, updateBrand, deleteBrand } = useApp();
@@ -23,7 +25,7 @@ export const BrandsPage: React.FC = () => {
     setFormName('');
     setFormOrigin('India');
     setFormWebsite('https://');
-    setFormLogoUrl('https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100&auto=format&fit=crop&q=80');
+    setFormLogoUrl('');
     setFormStatus('Active');
     setModalType('add');
   };
@@ -45,7 +47,7 @@ export const BrandsPage: React.FC = () => {
         name: formName,
         origin: formOrigin,
         website: formWebsite,
-        logoUrl: formLogoUrl,
+        logoUrl: formLogoUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100&auto=format&fit=crop&q=80',
         status: formStatus,
         productCount: 0
       });
@@ -121,7 +123,16 @@ export const BrandsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">
-              {filteredBrands.map(b => (
+              {filteredBrands.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[40px] text-outline mb-2">sell</span>
+                    <p className="font-label-md font-semibold text-on-surface">No brand partners found</p>
+                    <p className="text-body-sm text-outline mt-0.5">Try adjusting your search criteria or register a new brand.</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredBrands.map(b => (
                 <tr key={b.id} className="hover:bg-surface-container-low/60 transition-colors group">
                   <td className="py-3.5 px-4">
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-high p-0.5 border border-outline-variant/30 flex items-center justify-center">
@@ -176,7 +187,7 @@ export const BrandsPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
@@ -242,32 +253,29 @@ export const BrandsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
-                Logo Image URL
-              </label>
-              <input
-                type="text"
-                value={formLogoUrl}
-                onChange={(e) => setFormLogoUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-sm font-body-sm focus:border-primary focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
-                Status
-              </label>
-              <select
-                value={formStatus}
-                onChange={(e) => setFormStatus(e.target.value as 'Active' | 'Inactive')}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-md font-body-md focus:border-primary focus:outline-none"
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
+          {/* Brand Logo Upload Interface */}
+          <div className="pt-1">
+            <ImageUpload
+              label="Brand Logo"
+              value={formLogoUrl}
+              onChange={(url) => setFormLogoUrl(url)}
+              helperText="Upload JPG, PNG, or WEBP (Max 1MB). Logo uploads directly to GoTails cloud storage."
+              customUpload={uploadService.uploadBrandLogo}
+            />
+          </div>
+
+          <div>
+            <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
+              Status
+            </label>
+            <select
+              value={formStatus}
+              onChange={(e) => setFormStatus(e.target.value as 'Active' | 'Inactive')}
+              className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-md font-body-md focus:border-primary focus:outline-none"
+            >
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
           </div>
         </form>
       </Modal>

@@ -121,7 +121,16 @@ export const UnitsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10 text-body-md font-body-md text-on-surface">
-              {filteredUnits.map(u => (
+              {filteredUnits.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
+                    <span className="material-symbols-outlined text-[40px] text-outline mb-2">straighten</span>
+                    <p className="font-label-md font-semibold text-on-surface">No units of measurement found</p>
+                    <p className="text-body-sm text-outline mt-0.5">Try adjusting your search criteria or register a new unit.</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredUnits.map(u => (
                 <tr key={u.id} className="hover:bg-surface-container-low/60 transition-colors group">
                   <td className="py-3.5 px-6 font-bold text-on-surface">
                     <span className="hover:text-primary cursor-pointer transition-colors" onClick={() => openEditModal(u)}>
@@ -168,7 +177,7 @@ export const UnitsPage: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>
