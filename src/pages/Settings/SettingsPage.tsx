@@ -194,18 +194,6 @@ export const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Configuration Audit Metadata Card */}
-        <div className="bg-surface-container-low/40 rounded-xl p-4 border border-outline-variant/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[12px] text-on-surface-variant">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px] text-outline">info</span>
-            <span>
-              Config Key: <code className="font-mono font-semibold text-on-surface">{globalSettings?.key || 'GLOBAL_CONFIG'}</code>
-            </span>
-          </div>
-          <div>
-            Last synced with production: <span className="font-medium text-on-surface">{globalSettings?.updatedAt || 'Just now'}</span>
-          </div>
-        </div>
 
         {/* Action Controls */}
         <div className="flex items-center justify-end gap-3 pt-2">
