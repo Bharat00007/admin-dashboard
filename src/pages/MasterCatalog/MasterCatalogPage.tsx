@@ -4,7 +4,7 @@ import { Product } from '../../types';
 import { Modal } from '../../components/ui/Modal';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { ImageUpload } from '../../components/ui/ImageUpload';
+import { MultiImageUpload } from '../../components/ui/MultiImageUpload';
 
 export const MasterCatalogPage: React.FC = () => {
   const { 
@@ -25,6 +25,7 @@ export const MasterCatalogPage: React.FC = () => {
   // Modal states
   const [modalType, setModalType] = useState<'none' | 'add' | 'edit' | 'view'>('none');
   const [activeProduct, setActiveProduct] = useState<Product | null>(null);
+  const [viewImageIndex, setViewImageIndex] = useState(0);
 
   // Form states
   const [formName, setFormName] = useState('');
@@ -35,19 +36,19 @@ export const MasterCatalogPage: React.FC = () => {
   const [formDescription, setFormDescription] = useState('');
   const [formStatus, setFormStatus] = useState<'Active' | 'Inactive'>('Active');
   const [formPrice, setFormPrice] = useState<number>(0);
-  const [formImageUrl, setFormImageUrl] = useState('');
+  const [formImages, setFormImages] = useState<string[]>([]);
 
   const openAddModal = () => {
     setActiveProduct(null);
     setFormName('');
-    setFormSku(`SKU-GT-${Math.floor(100000 + Math.random() * 900000)}`);
-    setFormBrand(brands[0]?.name || 'Partner Brand');
-    setFormCategory(categories[0]?.name || 'General');
-    setFormUnit(units[0]?.name || 'Kilogram (kg)');
+    setFormSku('');
+    setFormBrand(brands[0]?.name || '');
+    setFormCategory(categories[0]?.name || '');
+    setFormUnit(units[0]?.name || '');
     setFormDescription('');
     setFormStatus('Active');
-    setFormPrice(499);
-    setFormImageUrl('');
+    setFormPrice(0);
+    setFormImages([]);
     setModalType('add');
   };
 
@@ -61,17 +62,20 @@ export const MasterCatalogPage: React.FC = () => {
     setFormDescription(p.description);
     setFormStatus(p.status);
     setFormPrice(p.price || 0);
-    setFormImageUrl(p.imageUrl);
+    const existingImages = p.images && p.images.length > 0 ? p.images : (p.imageUrl ? [p.imageUrl] : []);
+    setFormImages(existingImages);
     setModalType('edit');
   };
 
   const openViewModal = (p: Product) => {
     setActiveProduct(p);
+    setViewImageIndex(0);
     setModalType('view');
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    const primaryImg = formImages[0] || '';
     if (modalType === 'add') {
       addProduct({
         name: formName,
@@ -82,8 +86,9 @@ export const MasterCatalogPage: React.FC = () => {
         description: formDescription,
         status: formStatus,
         price: formPrice,
-        stock: 50,
-        imageUrl: formImageUrl || 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&auto=format&fit=crop&q=80'
+        stock: 0,
+        imageUrl: primaryImg,
+        images: formImages
       });
     } else if (modalType === 'edit' && activeProduct) {
       updateProduct(activeProduct.id, {
@@ -95,7 +100,8 @@ export const MasterCatalogPage: React.FC = () => {
         description: formDescription,
         status: formStatus,
         price: formPrice,
-        imageUrl: formImageUrl
+        imageUrl: primaryImg,
+        images: formImages
       });
     }
     setModalType('none');
@@ -263,8 +269,12 @@ export const MasterCatalogPage: React.FC = () => {
                 filteredProducts.map(p => (
                   <tr key={p.id} className="hover:bg-surface-container-low/60 transition-colors group">
                     <td className="py-3.5 pl-6 pr-3">
-                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-high p-0.5 flex-shrink-0 shadow-xs border border-outline-variant/30">
-                        <img className="w-full h-full object-cover rounded-md" src={p.imageUrl} alt={p.name} />
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-high p-0.5 flex-shrink-0 shadow-xs border border-outline-variant/30 flex items-center justify-center">
+                        {p.imageUrl ? (
+                          <img className="w-full h-full object-cover rounded-md" src={p.imageUrl} alt={p.name} />
+                        ) : (
+                          <span className="material-symbols-outlined text-[20px] text-outline">inventory_2</span>
+                        )}
                       </div>
                     </td>
                     <td className="py-3.5 px-4 font-semibold text-on-surface">
@@ -452,13 +462,14 @@ export const MasterCatalogPage: React.FC = () => {
             />
           </div>
 
-          {/* Product Image Upload Interface */}
+          {/* Multiple Product Images Upload Interface */}
           <div className="pt-1">
-            <ImageUpload
-              label="Product Image"
-              value={formImageUrl}
-              onChange={(url) => setFormImageUrl(url)}
-              helperText="Upload JPG, PNG, or WEBP (Max 1MB). Image uploads directly to GoTails cloud storage."
+            <MultiImageUpload
+              label="Product Images"
+              values={formImages}
+              onChange={setFormImages}
+              maxImages={6}
+              helperText="Upload JPG, PNG, or WEBP (Max 1MB each). Up to 6 images allowed. The first image is the primary catalog thumbnail."
             />
           </div>
 
@@ -506,8 +517,33 @@ export const MasterCatalogPage: React.FC = () => {
           }
         >
           <div className="space-y-4">
-            <div className="w-full h-48 rounded-xl overflow-hidden bg-surface-container-high border border-outline-variant/30 flex items-center justify-center p-2">
-              <img src={activeProduct.imageUrl} alt={activeProduct.name} className="w-full h-full object-contain" />
+            {/* Interactive Image Gallery */}
+            <div>
+              <div className="w-full h-52 rounded-xl overflow-hidden bg-surface-container-high border border-outline-variant/30 flex items-center justify-center p-2">
+                <img 
+                  src={(activeProduct.images && activeProduct.images[viewImageIndex]) || activeProduct.imageUrl} 
+                  alt={activeProduct.name} 
+                  className="w-full h-full object-contain" 
+                />
+              </div>
+
+              {/* Gallery Thumbnails */}
+              {activeProduct.images && activeProduct.images.length > 1 && (
+                <div className="flex items-center gap-2 mt-2.5 overflow-x-auto pb-1">
+                  {activeProduct.images.map((imgUrl, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setViewImageIndex(i)}
+                      className={`w-12 h-12 rounded-lg overflow-hidden bg-surface-container-high p-0.5 border-2 transition-all shrink-0 ${
+                        viewImageIndex === i ? 'border-primary ring-2 ring-primary/20' : 'border-outline-variant/30 opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={imgUrl} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-contain" />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>

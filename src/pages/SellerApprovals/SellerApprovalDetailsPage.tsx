@@ -114,26 +114,32 @@ export const SellerApprovalDetailsPage: React.FC = () => {
             <div className="p-3 rounded-lg bg-surface-container-low flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-outline block font-medium">GST Identification Number</span>
-                <span className="font-code-sm font-bold text-on-surface text-[14px]">{req.gstin}</span>
+                <span className="font-code-sm font-bold text-on-surface text-[14px]">{req.gstin || 'Not Provided'}</span>
               </div>
-              <Badge variant="success" size="sm">Valid GST Active</Badge>
+              <Badge variant={req.gstin ? 'success' : 'neutral'} size="sm">
+                {req.gstin ? 'Record Found' : 'Not Provided'}
+              </Badge>
             </div>
 
             <div className="p-3 rounded-lg bg-surface-container-low flex items-center justify-between">
               <div>
                 <span className="text-[11px] text-outline block font-medium">Permanent Account Number (PAN)</span>
-                <span className="font-code-sm font-bold text-on-surface text-[14px]">{req.pan}</span>
+                <span className="font-code-sm font-bold text-on-surface text-[14px]">{req.pan || 'Not Provided'}</span>
               </div>
-              <Badge variant="success" size="sm">Name Matched</Badge>
+              <Badge variant={req.pan ? 'success' : 'neutral'} size="sm">
+                {req.pan ? 'Record Found' : 'Not Provided'}
+              </Badge>
             </div>
 
-            <div className="p-3 rounded-lg bg-surface-container-low flex items-center justify-between">
-              <div>
-                <span className="text-[11px] text-outline block font-medium">Core Catalog Category</span>
-                <span className="font-semibold text-on-surface text-[13px]">{req.catalogCategory}</span>
+            {req.catalogCategory && (
+              <div className="p-3 rounded-lg bg-surface-container-low flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] text-outline block font-medium">Core Catalog Category</span>
+                  <span className="font-semibold text-on-surface text-[13px]">{req.catalogCategory}</span>
+                </div>
+                <Badge variant="neutral" size="sm">Specified</Badge>
               </div>
-              <Badge variant="neutral" size="sm">Standard Pet Care</Badge>
-            </div>
+            )}
           </div>
         </div>
 
@@ -141,51 +147,42 @@ export const SellerApprovalDetailsPage: React.FC = () => {
         <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/30 shadow-xs">
           <h3 className="font-headline-sm font-bold text-on-surface mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-tertiary text-[20px]">description</span>
-            <span>Document Audit &amp; Attachments</span>
+            <span>Document Audit &amp; Attachments ({req.verificationFiles?.length || 0})</span>
           </h3>
 
           <div className="space-y-3">
-            <div 
-              onClick={() => setInspectDoc('GST Registration Certificate')}
-              className="p-3 rounded-lg border border-outline-variant/20 hover:border-primary/40 cursor-pointer flex items-center justify-between bg-surface-container-lowest transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary text-[22px]">picture_as_pdf</span>
-                <div>
-                  <span className="font-label-md font-semibold text-on-surface block">GST Registration Certificate</span>
-                  <span className="text-[11px] text-outline">Verified digitally via GSTN API</span>
-                </div>
+            {(!req.verificationFiles || req.verificationFiles.length === 0) ? (
+              <div className="p-6 text-center text-on-surface-variant bg-surface-container-low rounded-lg">
+                <span className="material-symbols-outlined text-[32px] text-outline mb-1">attachment</span>
+                <p className="font-label-md font-semibold text-on-surface">No documents uploaded</p>
+                <p className="text-body-sm text-outline mt-0.5">Applicant did not attach statutory files during submission.</p>
               </div>
-              <span className="material-symbols-outlined text-outline text-[18px]">visibility</span>
-            </div>
-
-            <div 
-              onClick={() => setInspectDoc('PAN Card Identification')}
-              className="p-3 rounded-lg border border-outline-variant/20 hover:border-primary/40 cursor-pointer flex items-center justify-between bg-surface-container-lowest transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary text-[22px]">badge</span>
-                <div>
-                  <span className="font-label-md font-semibold text-on-surface block">PAN Card Copy</span>
-                  <span className="text-[11px] text-outline">Sole Proprietorship / Corporate PAN</span>
+            ) : (
+              req.verificationFiles.map((doc, idx) => (
+                <div 
+                  key={idx}
+                  onClick={() => {
+                    if (doc.fileUrl) {
+                      window.open(doc.fileUrl, '_blank');
+                    } else {
+                      setInspectDoc(doc.documentType);
+                    }
+                  }}
+                  className="p-3 rounded-lg border border-outline-variant/20 hover:border-primary/40 cursor-pointer flex items-center justify-between bg-surface-container-lowest transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-primary text-[22px]">description</span>
+                    <div>
+                      <span className="font-label-md font-semibold text-on-surface block">{doc.documentType}</span>
+                      <span className="text-[11px] text-outline">{doc.documentNumber ? `Doc #: ${doc.documentNumber}` : 'Submitted Attachment'}</span>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-outline text-[18px]">
+                    {doc.fileUrl ? 'open_in_new' : 'visibility'}
+                  </span>
                 </div>
-              </div>
-              <span className="material-symbols-outlined text-outline text-[18px]">visibility</span>
-            </div>
-
-            <div 
-              onClick={() => setInspectDoc('Cancelled Cheque / Bank Passbook')}
-              className="p-3 rounded-lg border border-outline-variant/20 hover:border-primary/40 cursor-pointer flex items-center justify-between bg-surface-container-lowest transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary text-[22px]">account_balance</span>
-                <div>
-                  <span className="font-label-md font-semibold text-on-surface block">Bank Account Verification</span>
-                  <span className="text-[11px] text-outline">Penny drop test validated</span>
-                </div>
-              </div>
-              <span className="material-symbols-outlined text-outline text-[18px]">visibility</span>
-            </div>
+              ))
+            )}
           </div>
         </div>
       </div>

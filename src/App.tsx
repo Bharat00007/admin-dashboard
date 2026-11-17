@@ -16,6 +16,11 @@ import { SellerDetailsPage } from './pages/Sellers/SellerDetailsPage';
 import { CustomersPage } from './pages/Customers/CustomersPage';
 import { SellerApprovalsPage } from './pages/SellerApprovals/SellerApprovalsPage';
 import { SellerApprovalDetailsPage } from './pages/SellerApprovals/SellerApprovalDetailsPage';
+import { IssuesPage } from './pages/Issues/IssuesPage';
+import { SellerProductRequestsPage } from './pages/MasterCatalog/SellerProductRequestsPage';
+
+import { SettingsPage } from './pages/Settings/SettingsPage';
+import { AuditLogsPage } from './pages/Audit/AuditLogsPage';
 
 export const AppContent: React.FC = () => {
   const { activeTab } = useApp();
@@ -32,6 +37,8 @@ export const AppContent: React.FC = () => {
         return <BrandsPage />;
       case 'units':
         return <UnitsPage />;
+      case 'product-requests':
+        return <SellerProductRequestsPage />;
       case 'sellers':
         return <SellersPage />;
       case 'seller-details':
@@ -42,6 +49,15 @@ export const AppContent: React.FC = () => {
         return <SellerApprovalsPage />;
       case 'approval-details':
         return <SellerApprovalDetailsPage />;
+      case 'issues':
+      case 'customer-issues':
+      case 'seller-issues':
+        return <IssuesPage />;
+
+      case 'audit-logs':
+        return <AuditLogsPage />;
+      case 'settings':
+        return <SettingsPage />;
       default:
         return <DashboardPage />;
     }

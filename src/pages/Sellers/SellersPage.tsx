@@ -124,7 +124,13 @@ export const SellersPage: React.FC = () => {
                   <tr key={s.id} className="hover:bg-surface-container-low/60 transition-colors group">
                     <td className="py-3.5 px-6">
                       <div className="flex items-center gap-3">
-                        <img className="w-10 h-10 rounded-full object-cover border border-outline-variant/30 flex-shrink-0" src={s.logoUrl} alt={s.shopName} />
+                        {s.logoUrl ? (
+                          <img className="w-10 h-10 rounded-full object-cover border border-outline-variant/30 flex-shrink-0" src={s.logoUrl} alt={s.shopName} />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-label-md shrink-0 border border-primary/20">
+                            {s.shopName.slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <span 
                             onClick={() => handleViewSeller(s)}
@@ -148,18 +154,18 @@ export const SellersPage: React.FC = () => {
                   <td className="py-3.5 px-4 text-center">
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container font-semibold text-[12px]">
                       <span className="material-symbols-outlined text-[14px] text-secondary">star</span>
-                      {s.rating}
+                      {s.rating > 0 ? s.rating.toFixed(1) : '—'}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     <div className="flex flex-col items-end">
-                      <span className="font-code-sm font-bold text-on-surface">{s.gmv}</span>
-                      <span className="text-[11px] text-outline font-medium">{s.totalOrders} orders</span>
+                      <span className="font-code-sm font-bold text-on-surface">{s.gmv || '—'}</span>
+                      <span className="text-[11px] text-outline font-medium">{s.totalOrders} reviews</span>
                     </div>
                   </td>
                   <td className="py-3.5 px-4 text-center">
-                    <span className="font-code-sm font-bold text-primary">
-                      {s.commissionRate}%
+                    <span className="font-code-sm font-bold text-on-surface-variant">
+                      {s.commissionRate !== undefined ? `${s.commissionRate}%` : 'Standard'}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-center">

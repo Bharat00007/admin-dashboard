@@ -25,6 +25,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [localPreview, setLocalPreview] = useState<string | null>(null);
 
+  const [previewError, setPreviewError] = useState(false);
+
   const displayImage = localPreview || value;
 
   const handleButtonClick = () => {
@@ -40,6 +42,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     if (!file) return;
 
     setUploadError(null);
+    setPreviewError(false);
 
     // Create local preview immediately for responsive UX
     const previewUrl = URL.createObjectURL(file);
@@ -52,6 +55,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       if (result.success && result.url) {
         onChange(result.url);
         setLocalPreview(null); // Switch to remote URL
+        setPreviewError(false);
       } else {
         setUploadError(result.error || 'Upload failed. Please try again.');
         // Revert local preview if upload failed
@@ -70,6 +74,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     if (disabled || isUploading) return;
     setUploadError(null);
     setLocalPreview(null);
+    setPreviewError(false);
     onChange('');
   };
 
@@ -98,15 +103,19 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           /* Preview State with Image, Replace and Remove Controls */
           <div className="p-3">
             <div className="relative group w-full h-44 rounded-lg overflow-hidden bg-surface-container-high flex items-center justify-center border border-outline-variant/30">
-              <img
-                src={displayImage}
-                alt="Product preview"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&auto=format&fit=crop&q=80';
-                }}
-              />
+              {previewError ? (
+                <div className="flex flex-col items-center justify-center p-4 text-center text-on-surface-variant">
+                  <span className="material-symbols-outlined text-[32px] text-outline mb-1">broken_image</span>
+                  <p className="text-body-xs text-outline">Image could not be loaded from remote URL</p>
+                </div>
+              ) : (
+                <img
+                  src={displayImage}
+                  alt="Asset preview"
+                  className="w-full h-full object-contain"
+                  onError={() => setPreviewError(true)}
+                />
+              )}
 
               {/* Uploading Overlay */}
               {isUploading && (

@@ -33,6 +33,20 @@ export interface BackendWeeklyScheduleItem {
   closeTime: string;
 }
 
+export interface BackendShopRating {
+  _id: string;
+  shopId: string;
+  orderId?: string | null;
+  customerId?: {
+    _id: string;
+    name?: string | null;
+    mobile?: string | null;
+  } | null;
+  rating: number;
+  review?: string | null;
+  createdAt: string;
+}
+
 export interface BackendShop {
   _id: string;
   sellerId: BackendShopSeller | string;
@@ -138,5 +152,20 @@ export const shopService = {
       method: 'PATCH',
       body: JSON.stringify(payload),
     });
+  },
+
+  /**
+   * Get shop ratings and customer reviews
+   * GET /api/v1/shops/:shopId/ratings
+   */
+  async getShopRatings(
+    shopId: string,
+    params: { page?: number; limit?: number } = {}
+  ): Promise<ApiResponse<BackendShopRating[]>> {
+    const query = new URLSearchParams();
+    if (params.page) query.set('page', params.page.toString());
+    if (params.limit) query.set('limit', params.limit.toString());
+    const qs = query.toString();
+    return apiClient<BackendShopRating[]>(`/shops/${shopId}/ratings${qs ? `?${qs}` : ''}`);
   },
 };

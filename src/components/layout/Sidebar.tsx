@@ -7,21 +7,25 @@ export const Sidebar: React.FC = () => {
     activeTab, 
     setActiveTab, 
     approvals,
+    issues,
+    productRequests,
     isMobileMenuOpen,
     setIsMobileMenuOpen
   } = useApp();
   const [catalogExpanded, setCatalogExpanded] = useState(
-    ['products', 'categories', 'brands', 'units'].includes(activeTab)
+    ['products', 'categories', 'brands', 'units', 'product-requests'].includes(activeTab)
   );
 
   const pendingApprovalsCount = approvals.filter(a => a.status === 'Pending' || a.status === 'Under Review').length;
+  const openIssuesCount = issues.filter(i => i.status === 'OPEN' || i.status === 'UNDER_REVIEW').length;
+  const pendingProductRequestsCount = productRequests.filter(r => r.status === 'PENDING').length;
 
   const handleNav = (tab: TabType) => {
     setActiveTab(tab);
     setIsMobileMenuOpen(false);
   };
 
-  const isCatalogActive = ['products', 'categories', 'brands', 'units'].includes(activeTab);
+  const isCatalogActive = ['products', 'categories', 'brands', 'units', 'product-requests'].includes(activeTab);
 
   return (
     <>
@@ -147,6 +151,21 @@ export const Sidebar: React.FC = () => {
                 >
                   Units
                 </button>
+                <button
+                  onClick={() => handleNav('product-requests')}
+                  className={`w-full flex items-center justify-between px-3 py-2 min-h-[40px] rounded-lg transition-colors text-left font-body-sm text-body-sm ${
+                    activeTab === 'product-requests'
+                      ? 'bg-primary/10 text-primary font-semibold'
+                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                  }`}
+                >
+                  <span>SKU Requests</span>
+                  {pendingProductRequestsCount > 0 && (
+                    <span className="px-1.5 py-0.2 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-semibold">
+                      {pendingProductRequestsCount}
+                    </span>
+                  )}
+                </button>
               </div>
             )}
           </div>
@@ -195,6 +214,53 @@ export const Sidebar: React.FC = () => {
                 {pendingApprovalsCount} Pending
               </span>
             )}
+          </button>
+
+          {/* Issues & Support Management */}
+          <button
+            onClick={() => handleNav('issues')}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 min-h-[44px] rounded-xl transition-all font-body-md text-body-md text-left ${
+              activeTab === 'issues' || activeTab === 'customer-issues' || activeTab === 'seller-issues'
+                ? 'bg-primary/10 text-primary font-semibold shadow-xs'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-[20px]">support_agent</span>
+              <span>Issues &amp; Support</span>
+            </div>
+            {openIssuesCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-error-container/30 text-error font-label-sm text-label-sm font-semibold">
+                {openIssuesCount} Open
+              </span>
+            )}
+          </button>
+
+
+          {/* Audit Logs */}
+          <button
+            onClick={() => handleNav('audit-logs')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] rounded-xl transition-all font-body-md text-body-md text-left ${
+              activeTab === 'audit-logs'
+                ? 'bg-primary/10 text-primary font-semibold shadow-xs'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[20px]">history</span>
+            <span>Audit Logs</span>
+          </button>
+
+          {/* Global Settings */}
+          <button
+            onClick={() => handleNav('settings')}
+            className={`w-full flex items-center gap-3 px-3.5 py-2.5 min-h-[44px] rounded-xl transition-all font-body-md text-body-md text-left ${
+              activeTab === 'settings'
+                ? 'bg-primary/10 text-primary font-semibold shadow-xs'
+                : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+            }`}
+          >
+            <span className="material-symbols-outlined text-[20px]">settings</span>
+            <span>Global Settings</span>
           </button>
         </nav>
       </div>

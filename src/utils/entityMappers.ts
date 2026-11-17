@@ -6,6 +6,11 @@ import {
   Seller,
   Customer,
   SellerApprovalRequest,
+  Issue,
+  ProductRequest,
+  GlobalSettings,
+  AuditLog,
+  ShopRating,
 } from '../types';
 import {
   BackendUnit,
@@ -13,13 +18,17 @@ import {
   BackendBrand,
   BackendMasterProduct,
 } from '../services/catalogService';
-import { BackendShop } from '../services/shopService';
+import { BackendShop, BackendShopRating } from '../services/shopService';
 import { BackendUser } from '../services/userService';
+import { BackendIssue } from '../services/issueService';
+import { BackendProductRequest } from '../services/productRequestService';
+import { BackendGlobalSettings } from '../services/settingsService';
+import { BackendAuditLog } from '../services/auditService';
 import { formatDate, formatAddress } from './formatters';
 
-const DEFAULT_PRODUCT_IMG = 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=120&auto=format&fit=crop&q=80';
-const DEFAULT_BRAND_LOGO = 'https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=120&auto=format&fit=crop&q=80';
-const DEFAULT_AVATAR = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80';
+const DEFAULT_PRODUCT_IMG = '';
+const DEFAULT_BRAND_LOGO = '';
+const DEFAULT_AVATAR = '';
 
 /**
  * Maps BackendUnit -> Frontend Unit
@@ -44,28 +53,67 @@ export function mapBackendCategory(c: BackendCategory): Category {
     id: c._id,
     code: c.slug,
     name: c.name,
-    description: c.description || 'Pet care category catalog',
+    description: c.description || '',
     productCount: 0,
-    commission: 10,
+    commission: undefined,
     status: c.isActive ? 'Active' : 'Inactive',
     icon: 'pets',
     color: '#4F46E5',
+    imageUrl: c.imageUrl || undefined,
   };
+}
+
+/**
+ * Resolves a brand logo URL. If the backend contains an unreachable placeholder
+ * URL (such as the legacy seed domain storage.gotails.com), resolves to the
+ * high-definition bundled brand asset so the UI displays the true brand logo.
+ */
+export function resolveBrandLogo(url?: string | null, slugOrName?: string): string {
+  if (url && !url.includes('storage.gotails.com')) {
+    return url;
+  }
+  
+  let slug = '';
+  if (url && url.includes('storage.gotails.com/brands/')) {
+    slug = url.split('/').pop()?.replace('.png', '').replace('.jpg', '') || '';
+  }
+  if (!slug && slugOrName) {
+    slug = slugOrName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+
+  const knownLogos: Record<string, string> = {
+    'drools': '/assets/brands/drools.svg',
+    'pedigree': '/assets/brands/pedigree.svg',
+    'whiskas': '/assets/brands/whiskas.svg',
+    'himalaya': '/assets/brands/himalaya.svg',
+    'farmina-nd': '/assets/brands/farmina-nd.svg',
+    'farmina': '/assets/brands/farmina-nd.svg',
+    'jerhigh': '/assets/brands/jerhigh.svg',
+  };
+
+  if (slug && knownLogos[slug]) {
+    return knownLogos[slug];
+  }
+
+  return url || '';
 }
 
 /**
  * Maps BackendBrand -> Frontend Brand
  */
 export function mapBackendBrand(b: BackendBrand): Brand {
+  const rawUrl = b.imageUrl || (b as any).logoUrl || (b as any).logo || (b as any).image;
+  const imgUrl = resolveBrandLogo(rawUrl, b.slug || b.name);
   return {
     id: b._id,
     name: b.name,
-    origin: 'India',
+    origin: b.description || undefined,
     productCount: 0,
-    website: `https://${b.slug}.com`,
+    website: undefined,
     status: b.isActive ? 'Active' : 'Inactive',
-    logoUrl: b.imageUrl || DEFAULT_BRAND_LOGO,
-    isFeatured: true,
+    logoUrl: imgUrl,
+    imageUrl: imgUrl,
+    isFeatured: false,
   };
 }
 
@@ -75,15 +123,15 @@ export function mapBackendBrand(b: BackendBrand): Brand {
 export function mapBackendProduct(p: BackendMasterProduct): Product {
   const brandName = typeof p.brandId === 'object' && p.brandId !== null
     ? p.brandId.name
-    : 'Partner Brand';
+    : '—';
 
   const categoryName = typeof p.categoryId === 'object' && p.categoryId !== null
     ? p.categoryId.name
-    : 'Pet Supplies';
+    : '—';
 
   const unitCode = typeof p.unitId === 'object' && p.unitId !== null
     ? p.unitId.code
-    : 'pc';
+    : '';
 
   const displayImage = p.images && p.images.length > 0 && p.images[0]
     ? p.images[0]
@@ -95,12 +143,13 @@ export function mapBackendProduct(p: BackendMasterProduct): Product {
     sku: `SKU-${p._id.slice(-6).toUpperCase()}`,
     brand: brandName,
     category: categoryName,
-    unit: `${p.unitValue || 1} ${unitCode}`,
-    description: p.description || 'Master platform catalog SKU specification',
+    unit: unitCode ? `${p.unitValue || 1} ${unitCode}` : `${p.unitValue || 1}`,
+    description: p.description || '',
     status: p.isActive ? 'Active' : 'Inactive',
     imageUrl: displayImage,
-    price: p.unitValue || 0,
-    stock: 100,
+    images: p.images && p.images.length > 0 ? p.images : (displayImage ? [displayImage] : []),
+    price: 0,
+    stock: 0,
   };
 }
 
@@ -110,12 +159,16 @@ export function mapBackendProduct(p: BackendMasterProduct): Product {
 export function mapBackendShop(s: BackendShop): Seller {
   const sellerObj = typeof s.sellerId === 'object' && s.sellerId !== null ? s.sellerId : null;
   const ownerName = sellerObj?.name || 'Registered Merchant';
-  const ownerEmail = sellerObj?.email || `shop-${s.shopCode.toLowerCase()}@gotails.in`;
+  const ownerEmail = sellerObj?.email || '';
   const ownerPhone = s.phone || sellerObj?.mobile || '—';
 
   // Check verification documents for statutory details
-  const gstinDoc = s.verificationDocuments?.find(d => d.documentType.includes('GST') || d.documentType.includes('TAX'));
-  const panDoc = s.verificationDocuments?.find(d => d.documentType.includes('PAN') || d.documentType.includes('ID'));
+  const gstinDoc = s.verificationDocuments?.find(d => 
+    d.documentType.toUpperCase().includes('GST') || d.documentType.toUpperCase().includes('TAX')
+  );
+  const panDoc = s.verificationDocuments?.find(d => 
+    d.documentType.toUpperCase().includes('PAN') || d.documentType.toUpperCase().includes('ID')
+  );
 
   const kycStatus = s.approvalStatus === 'APPROVED'
     ? 'Verified'
@@ -135,25 +188,21 @@ export function mapBackendShop(s: BackendShop): Seller {
     ownerName,
     email: ownerEmail,
     phone: ownerPhone,
-    city: s.address?.city || 'India',
+    city: s.address?.city || '—',
     address: formatAddress(s.address),
-    rating: s.ratingAverage || 5.0,
+    rating: s.ratingAverage || 0,
     totalOrders: s.ratingCount || 0,
-    gmv: '₹0',
-    commissionRate: 10.0,
+    gmv: undefined,
+    commissionRate: undefined,
     kycStatus,
     status,
     logoUrl: s.logoUrl || DEFAULT_BRAND_LOGO,
     joinedDate: formatDate(s.createdAt),
-    operatingHours: '09:00 AM – 10:00 PM',
-    bankAccount: {
-      accountNumber: 'XXXX-XXXX-XXXX',
-      bankName: 'Merchant Settlement Account',
-      ifsc: 'GOTAIL01',
-      holderName: s.shopName,
-    },
-    gstin: gstinDoc?.documentNumber || '27AABCU9603R1ZM',
-    pan: panDoc?.documentNumber || 'AABCU9603R',
+    operatingHours: undefined,
+    bankAccount: null,
+    gstin: gstinDoc?.documentNumber || undefined,
+    pan: panDoc?.documentNumber || undefined,
+    customRadiusKm: s.customRadiusKm || undefined,
   };
 }
 
@@ -163,10 +212,21 @@ export function mapBackendShop(s: BackendShop): Seller {
 export function mapBackendShopApproval(s: BackendShop): SellerApprovalRequest {
   const sellerObj = typeof s.sellerId === 'object' && s.sellerId !== null ? s.sellerId : null;
   const ownerName = sellerObj?.name || 'Applicant';
-  const ownerEmail = sellerObj?.email || `${s.phone}@gotails.in`;
+  const ownerEmail = sellerObj?.email || '';
   const ownerPhone = s.phone || sellerObj?.mobile || '—';
 
-  const hasDocs = Boolean(s.verificationDocuments && s.verificationDocuments.length > 0);
+  const gstinDoc = s.verificationDocuments?.find(d => 
+    d.documentType.toUpperCase().includes('GST') || d.documentType.toUpperCase().includes('TAX')
+  );
+  const panDoc = s.verificationDocuments?.find(d => 
+    d.documentType.toUpperCase().includes('PAN') || d.documentType.toUpperCase().includes('ID')
+  );
+  const drugDoc = s.verificationDocuments?.find(d => 
+    d.documentType.toUpperCase().includes('DRUG') || d.documentType.toUpperCase().includes('FSSAI') || d.documentType.toUpperCase().includes('LICENSE')
+  );
+  const bankDoc = s.verificationDocuments?.find(d => 
+    d.documentType.toUpperCase().includes('BANK') || d.documentType.toUpperCase().includes('PASSBOOK') || d.documentType.toUpperCase().includes('CHEQUE')
+  );
 
   const status = s.approvalStatus === 'APPROVED'
     ? 'Approved'
@@ -180,21 +240,21 @@ export function mapBackendShopApproval(s: BackendShop): SellerApprovalRequest {
     applicantName: ownerName,
     email: ownerEmail,
     phone: ownerPhone,
-    city: s.address?.city || 'India',
-    businessType: 'Retailer',
-    gstin: s.verificationDocuments?.[0]?.documentNumber || '27AABCU9603R1ZM',
-    pan: s.verificationDocuments?.[1]?.documentNumber || 'AABCU9603R',
+    city: s.address?.city || '—',
+    businessType: undefined,
+    gstin: gstinDoc?.documentNumber || undefined,
+    pan: panDoc?.documentNumber || undefined,
     appliedDate: formatDate(s.createdAt),
     status,
     documents: {
-      gstCertificate: hasDocs,
-      panCard: hasDocs,
-      fssaiDrugLicense: true,
-      bankPassbook: true,
+      gstCertificate: Boolean(gstinDoc),
+      panCard: Boolean(panDoc),
+      fssaiDrugLicense: Boolean(drugDoc),
+      bankPassbook: Boolean(bankDoc),
       storeFrontPhoto: Boolean(s.bannerUrl || s.logoUrl),
     },
     storeAddress: formatAddress(s.address),
-    catalogCategory: 'Pet Supplies & Nutrition',
+    catalogCategory: undefined,
     remarks: s.rejectionReason || undefined,
     verificationFiles: s.verificationDocuments || [],
   };
@@ -207,9 +267,9 @@ export function mapBackendCustomer(u: BackendUser): Customer {
   return {
     id: u._id,
     name: u.name || `Customer (${u.mobile.slice(-4)})`,
-    email: u.email || `${u.mobile}@gotails.customer`,
+    email: u.email || '',
     phone: u.mobile,
-    city: 'India',
+    city: '—',
     totalOrders: 0,
     lifetimeSpend: 0,
     joinedDate: formatDate(u.createdAt),
@@ -218,3 +278,161 @@ export function mapBackendCustomer(u: BackendUser): Customer {
     lastOrderDate: formatDate(u.updatedAt),
   };
 }
+
+/**
+ * Maps BackendIssue -> Frontend Issue
+ */
+export function mapBackendIssue(iss: BackendIssue): Issue {
+  const isSellerReported = !iss.customerId || iss.description.toLowerCase().includes('[seller') || iss.description.toLowerCase().includes('merchant');
+
+  return {
+    id: iss._id,
+    orderId: iss.orderId ? {
+      id: iss.orderId._id,
+      orderNumber: iss.orderId.orderNumber,
+      status: iss.orderId.status,
+      totalAmount: iss.orderId.totalPaise ? iss.orderId.totalPaise / 100 : 0,
+      createdAt: formatDate(iss.orderId.createdAt),
+    } : null,
+    customerId: iss.customerId ? {
+      id: iss.customerId._id,
+      mobile: iss.customerId.mobile,
+      name: iss.customerId.name || `Customer (${iss.customerId.mobile.slice(-4)})`,
+      email: iss.customerId.email || null,
+    } : null,
+    shopId: iss.shopId ? {
+      id: iss.shopId._id,
+      shopName: iss.shopId.shopName,
+      phone: iss.shopId.phone,
+    } : null,
+    orderStatusAtReport: iss.orderStatusAtReport || undefined,
+    problemType: iss.problemType ? iss.problemType.replace(/_/g, ' ') : 'General Support',
+    description: iss.description,
+    status: iss.status,
+    adminNotes: iss.adminNotes,
+    reviewedBy: iss.reviewedBy ? {
+      id: iss.reviewedBy._id,
+      name: iss.reviewedBy.name || 'Administrator',
+      mobile: iss.reviewedBy.mobile || null,
+    } : null,
+    reviewedAt: iss.reviewedAt ? formatDate(iss.reviewedAt) : null,
+    createdAt: formatDate(iss.createdAt),
+    updatedAt: formatDate(iss.updatedAt),
+    reporterType: isSellerReported ? 'SELLER' : 'CUSTOMER',
+  };
+}
+
+/**
+ * Maps BackendProductRequest -> Frontend ProductRequest
+ */
+export function mapBackendProductRequest(pr: BackendProductRequest): ProductRequest {
+  const productName = pr.proposedName || pr.name || 'Untitled Product';
+
+  let productImages: string[] = [];
+  if (Array.isArray(pr.images) && pr.images.length > 0) {
+    productImages = pr.images.filter(Boolean);
+  } else if (pr.imageUrl) {
+    productImages = [pr.imageUrl];
+  }
+
+  return {
+    id: pr._id,
+    shopId: pr.shopId ? {
+      id: pr.shopId._id,
+      shopName: pr.shopId.shopName,
+      phone: pr.shopId.phone || pr.shopId.shopCode || '',
+      shopCode: pr.shopId.shopCode,
+    } : null,
+    sellerId: pr.sellerId ? {
+      id: pr.sellerId._id,
+      name: pr.sellerId.name,
+      mobile: pr.sellerId.mobile,
+      email: pr.sellerId.email,
+    } : null,
+    name: productName,
+    proposedName: pr.proposedName,
+    description: pr.description || '',
+    categoryId: pr.categoryId ? {
+      id: pr.categoryId._id,
+      name: pr.categoryId.name,
+    } : null,
+    brandId: pr.brandId ? {
+      id: pr.brandId._id,
+      name: pr.brandId.name,
+    } : null,
+    unitId: pr.unitId ? {
+      id: pr.unitId._id,
+      name: pr.unitId.name,
+      code: pr.unitId.code,
+    } : null,
+    unitValue: pr.unitValue,
+    imageUrl: pr.imageUrl || (productImages.length > 0 ? productImages[0] : undefined),
+    images: productImages,
+    status: pr.status,
+    adminNotes: pr.adminNotes,
+    reviewedBy: pr.reviewedBy ? {
+      id: pr.reviewedBy._id,
+      name: pr.reviewedBy.name,
+    } : null,
+    reviewedAt: pr.reviewedAt ? formatDate(pr.reviewedAt) : null,
+    createdAt: formatDate(pr.createdAt),
+    updatedAt: formatDate(pr.updatedAt),
+  };
+}
+
+
+/**
+ * Maps BackendGlobalSettings -> Frontend GlobalSettings
+ */
+export function mapBackendGlobalSettings(s: BackendGlobalSettings): GlobalSettings {
+  return {
+    key: s.key,
+    universalSearchRadiusKm: s.universalSearchRadiusKm,
+    globalDeliveryChargePaise: s.globalDeliveryChargePaise,
+    globalDeliveryChargeRupees: s.globalDeliveryChargeRupees,
+    updatedBy: s.updatedBy,
+    updatedAt: formatDate(s.updatedAt),
+  };
+}
+
+/**
+ * Maps BackendAuditLog -> Frontend AuditLog
+ */
+export function mapBackendAuditLog(al: BackendAuditLog): AuditLog {
+  return {
+    id: al._id,
+    actorId: al.actorId ? {
+      id: al.actorId._id,
+      role: al.actorId.role,
+      email: al.actorId.email,
+      name: al.actorId.name || 'Admin',
+    } : null,
+    actorRole: al.actorRole,
+    action: al.action,
+    targetType: al.targetType,
+    targetId: al.targetId,
+    changes: al.changes,
+    ipAddress: al.ipAddress,
+    createdAt: formatDate(al.createdAt),
+  };
+}
+
+/**
+ * Maps BackendShopRating -> Frontend ShopRating
+ */
+export function mapBackendShopRating(r: BackendShopRating): ShopRating {
+  return {
+    id: r._id,
+    shopId: r.shopId,
+    orderId: r.orderId,
+    customerId: r.customerId ? {
+      id: r.customerId._id,
+      name: r.customerId.name,
+      mobile: r.customerId.mobile,
+    } : null,
+    rating: r.rating,
+    review: r.review,
+    createdAt: formatDate(r.createdAt),
+  };
+}
+

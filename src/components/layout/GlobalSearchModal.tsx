@@ -139,7 +139,13 @@ export const GlobalSearchModal: React.FC = () => {
                         className="p-2.5 rounded-lg hover:bg-surface-container-low cursor-pointer flex items-center justify-between transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <img src={p.imageUrl} alt={p.name} className="w-8 h-8 rounded object-cover" />
+                          {p.imageUrl ? (
+                            <img src={p.imageUrl} alt={p.name} className="w-8 h-8 rounded object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 rounded bg-surface-container flex items-center justify-center text-outline">
+                              <span className="material-symbols-outlined text-[16px]">inventory_2</span>
+                            </div>
+                          )}
                           <div>
                             <p className="font-label-md text-label-md font-semibold text-on-surface">{p.name}</p>
                             <p className="font-code-sm text-code-sm text-outline">{p.sku} • {p.brand}</p>
@@ -164,13 +170,21 @@ export const GlobalSearchModal: React.FC = () => {
                         className="p-2.5 rounded-lg hover:bg-surface-container-low cursor-pointer flex items-center justify-between transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <img src={s.logoUrl} alt={s.shopName} className="w-8 h-8 rounded-full object-cover" />
+                          {s.logoUrl ? (
+                            <img src={s.logoUrl} alt={s.shopName} className="w-8 h-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[11px]">
+                              {s.shopName.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
                           <div>
                             <p className="font-label-md text-label-md font-semibold text-on-surface">{s.shopName}</p>
                             <p className="font-body-sm text-body-sm text-on-surface-variant">{s.ownerName} • {s.city}</p>
                           </div>
                         </div>
-                        <span className="text-[12px] px-2 py-0.5 rounded bg-surface-container font-medium text-on-surface">⭐ {s.rating}</span>
+                        <span className="text-[12px] px-2 py-0.5 rounded bg-surface-container font-medium text-on-surface">
+                          {s.rating > 0 ? `⭐ ${s.rating.toFixed(1)}` : 'Store'}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -189,10 +203,16 @@ export const GlobalSearchModal: React.FC = () => {
                         className="p-2.5 rounded-lg hover:bg-surface-container-low cursor-pointer flex items-center justify-between transition-colors"
                       >
                         <div className="flex items-center gap-3">
-                          <img src={c.avatarUrl} alt={c.name} className="w-8 h-8 rounded-full object-cover" />
+                          {c.avatarUrl ? (
+                            <img src={c.avatarUrl} alt={c.name} className="w-8 h-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[11px]">
+                              {c.name.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
                           <div>
                             <p className="font-label-md text-label-md font-semibold text-on-surface">{c.name}</p>
-                            <p className="font-body-sm text-body-sm text-on-surface-variant">{c.email} • {c.city}</p>
+                            <p className="font-body-sm text-body-sm text-on-surface-variant">{c.email || c.phone} • {c.city}</p>
                           </div>
                         </div>
                         <span className="font-label-sm text-label-sm text-tertiary font-semibold">{c.totalOrders} Orders</span>
@@ -222,7 +242,7 @@ export const GlobalSearchModal: React.FC = () => {
                             <p className="font-body-sm text-body-sm text-on-surface-variant">{cat.productCount} Products</p>
                           </div>
                         </div>
-                        <span className="font-label-sm text-label-sm text-outline">{cat.commission}% commission</span>
+                        <span className="font-label-sm text-label-sm text-outline">Category Node</span>
                       </div>
                     ))}
                   </div>

@@ -105,7 +105,9 @@ export const SellerApprovalsPage: React.FC = () => {
                     >
                       {req.shopName}
                     </span>
-                    <span className="font-code-sm text-outline text-[11px] block">{req.gstin}</span>
+                    {req.gstin && (
+                      <span className="font-code-sm text-outline text-[11px] block">{req.gstin}</span>
+                    )}
                   </td>
                   <td className="py-3.5 px-4">
                     <div className="flex flex-col">
@@ -115,20 +117,21 @@ export const SellerApprovalsPage: React.FC = () => {
                   </td>
                   <td className="py-3.5 px-4">
                     <span className="inline-flex items-center px-2 py-0.5 rounded bg-surface-container text-on-surface text-[12px] font-medium">
-                      {req.businessType}
+                      {req.businessType || 'Retail Merchant'}
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-on-surface-variant font-medium">
                     {req.city}
                   </td>
                   <td className="py-3.5 px-4 text-center">
-                    <div className="inline-flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px] text-tertiary" title="GST Verified">verified</span>
-                      <span className="material-symbols-outlined text-[16px] text-tertiary" title="PAN Verified">id_card</span>
-                      <span className={`material-symbols-outlined text-[16px] ${req.documents.fssaiDrugLicense ? 'text-tertiary' : 'text-outline'}`} title="Drug License">
-                        medical_services
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold ${
+                      (req.verificationFiles?.length || 0) > 0 ? 'bg-tertiary/10 text-tertiary' : 'bg-surface-container text-outline'
+                    }`}>
+                      <span className="material-symbols-outlined text-[13px]">
+                        {(req.verificationFiles?.length || 0) > 0 ? 'check_circle' : 'pending'}
                       </span>
-                    </div>
+                      <span>{req.verificationFiles?.length || 0} files</span>
+                    </span>
                   </td>
                   <td className="py-3.5 px-4 text-[12px] text-outline font-medium">
                     {req.appliedDate}

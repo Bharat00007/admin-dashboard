@@ -38,6 +38,8 @@ export const Topbar: React.FC = () => {
         return ['Inventory & Master Data', 'Partners', 'Brands Management'];
       case 'units':
         return ['Inventory & Master Data', 'Standards', 'Units Management'];
+      case 'product-requests':
+        return ['Inventory & Master Data', 'Requests', 'Seller SKU Approvals'];
       case 'sellers':
         return ['Marketplace Operations', 'Sellers & Shops'];
       case 'seller-details':
@@ -48,6 +50,15 @@ export const Topbar: React.FC = () => {
         return ['Compliance & Onboarding', 'Seller Approvals'];
       case 'approval-details':
         return ['Compliance & Onboarding', 'Seller Approvals', 'Application Audit'];
+      case 'issues':
+      case 'customer-issues':
+      case 'seller-issues':
+        return ['Customer & Seller Support', 'Issue Reports'];
+
+      case 'audit-logs':
+        return ['System & Compliance', 'Audit Logs'];
+      case 'settings':
+        return ['System & Compliance', 'Global Settings'];
       default:
         return ['Administration', 'Dashboard'];
     }

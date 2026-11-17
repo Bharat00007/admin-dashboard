@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <rect width="200" height="200" rx="36" fill="#F8BA00"/>
+  <!-- Pedigree Classic Oval Ribbon -->
+  <ellipse cx="100" cy="100" rx="86" ry="60" fill="#E8A700"/>
+  <ellipse cx="100" cy="98" rx="80" ry="54" fill="#F8BA00"/>
+  <path d="M 26,100 Q 100,68 174,100 Q 100,132 26,100 Z" fill="#D61821"/>
+  <!-- Pedigree Wordmark -->
+  <text x="100" y="108" font-family="'Times New Roman', Georgia, serif" font-weight="bold" font-style="italic" font-size="28" fill="#FFFFFF" text-anchor="middle" letter-spacing="0.5">Pedigree</text>
+  <circle cx="100" cy="56" r="14" fill="#0D519C"/>
+  <path d="M96,52 L100,48 L104,52 L102,60 L98,60 Z" fill="#FFFFFF"/>
+</svg>

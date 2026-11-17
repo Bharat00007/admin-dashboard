@@ -7,7 +7,12 @@ import {
   Unit, 
   Seller, 
   Customer, 
-  SellerApprovalRequest 
+  SellerApprovalRequest,
+  Issue,
+  IssueStatus,
+  ProductRequest,
+  GlobalSettings,
+  AuditLog
 } from '../types';
 import { useAuth } from './AuthContext';
 import { 
@@ -20,6 +25,10 @@ import {
 import { shopService, BackendShop } from '../services/shopService';
 import { userService, BackendUser } from '../services/userService';
 import { analyticsService, AdminAnalyticsOverview } from '../services/analyticsService';
+import { issueService } from '../services/issueService';
+import { productRequestService } from '../services/productRequestService';
+import { settingsService } from '../services/settingsService';
+import { auditService } from '../services/auditService';
 import { getApiErrorMessage } from '../services/apiClient';
 import {
   mapBackendUnit,
@@ -28,7 +37,11 @@ import {
   mapBackendProduct,
   mapBackendShop,
   mapBackendShopApproval,
-  mapBackendCustomer
+  mapBackendCustomer,
+  mapBackendIssue,
+  mapBackendProductRequest,
+  mapBackendGlobalSettings,
+  mapBackendAuditLog
 } from '../utils/entityMappers';
 
 interface ToastState {
@@ -92,6 +105,34 @@ interface AppContextType {
   approveSellerRequest: (id: string) => Promise<void>;
   rejectSellerRequest: (id: string, remarks?: string) => Promise<void>;
 
+  // Issues
+  issues: Issue[];
+  isLoadingIssues: boolean;
+  loadIssues: () => Promise<void>;
+  updateIssueStatus: (id: string, status: IssueStatus, adminNotes?: string) => Promise<boolean>;
+
+  // Product Requests
+  productRequests: ProductRequest[];
+  isLoadingProductRequests: boolean;
+  loadProductRequests: (status?: string) => Promise<void>;
+  approveProductRequest: (id: string) => Promise<boolean>;
+  rejectProductRequest: (id: string, adminNotes?: string) => Promise<boolean>;
+
+
+  // Global Settings
+  globalSettings: GlobalSettings | null;
+  isLoadingSettings: boolean;
+  loadGlobalSettings: () => Promise<void>;
+  updateGlobalSettings: (payload: { universalSearchRadiusKm?: number; globalDeliveryChargePaise?: number }) => Promise<boolean>;
+
+  // Audit Logs
+  auditLogs: AuditLog[];
+  isLoadingAuditLogs: boolean;
+  loadAuditLogs: (params?: { page?: number; limit?: number; targetType?: string; action?: string }) => Promise<void>;
+
+  // Shop Details Update
+  updateShopDetails: (id: string, payload: { shopName?: string; customRadiusKm?: number | null }) => Promise<boolean>;
+
   // Toast
   toast: ToastState;
   showToast: (title: string, message: string, type?: 'success' | 'info' | 'error') => void;
@@ -123,6 +164,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [approvals, setApprovals] = useState<SellerApprovalRequest[]>([]);
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [isLoadingIssues, setIsLoadingIssues] = useState<boolean>(false);
+
+  const [productRequests, setProductRequests] = useState<ProductRequest[]>([]);
+  const [isLoadingProductRequests, setIsLoadingProductRequests] = useState<boolean>(false);
+
+
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings | null>(null);
+  const [isLoadingSettings, setIsLoadingSettings] = useState<boolean>(false);
+
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [isLoadingAuditLogs, setIsLoadingAuditLogs] = useState<boolean>(false);
 
   // Raw backend states
   const [backendUnits, setBackendUnits] = useState<BackendUnit[]>([]);
@@ -175,7 +228,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         shopsRes,
         customersRes,
         analyticsRes,
-      ] = await Promise.all([
+        issuesRes,
+        productReqRes,
+        settingsRes,
+        auditRes,
+      ] = await Promise.allSettled([
         catalogService.getUnits(),
         catalogService.getCategories(),
         catalogService.getBrands(),
@@ -183,56 +240,80 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         shopService.getShops({ limit: 100 }),
         userService.getCustomers({ limit: 100 }),
         analyticsService.getOverview(),
+        issueService.getIssues({ limit: 100 }),
+        productRequestService.getProductRequests({ limit: 50 }),
+        settingsService.getSettings(),
+        auditService.getAuditLogs({ limit: 50 }),
       ]);
 
       // 1. Units
-      if (unitsRes.success && unitsRes.data) {
-        setBackendUnits(unitsRes.data);
-        setUnits(unitsRes.data.map(mapBackendUnit));
+      if (unitsRes.status === 'fulfilled' && unitsRes.value.success && unitsRes.value.data) {
+        setBackendUnits(unitsRes.value.data);
+        setUnits(unitsRes.value.data.map(mapBackendUnit));
       }
 
       // 2. Categories
-      if (categoriesRes.success && categoriesRes.data) {
-        setBackendCategories(categoriesRes.data);
-        setCategories(categoriesRes.data.map(mapBackendCategory));
+      if (categoriesRes.status === 'fulfilled' && categoriesRes.value.success && categoriesRes.value.data) {
+        setBackendCategories(categoriesRes.value.data);
+        setCategories(categoriesRes.value.data.map(mapBackendCategory));
       }
 
       // 3. Brands
-      if (brandsRes.success && brandsRes.data) {
-        setBackendBrands(brandsRes.data);
-        setBrands(brandsRes.data.map(mapBackendBrand));
+      if (brandsRes.status === 'fulfilled' && brandsRes.value.success && brandsRes.value.data) {
+        setBackendBrands(brandsRes.value.data);
+        setBrands(brandsRes.value.data.map(mapBackendBrand));
       }
 
       // 4. Products
-      if (productsRes.success && productsRes.data) {
-        setBackendProducts(productsRes.data);
-        setProducts(productsRes.data.map(mapBackendProduct));
+      if (productsRes.status === 'fulfilled' && productsRes.value.success && productsRes.value.data) {
+        setBackendProducts(productsRes.value.data);
+        setProducts(productsRes.value.data.map(mapBackendProduct));
       }
 
       // 5. Shops / Sellers & Approvals
-      if (shopsRes.success && shopsRes.data) {
-        setBackendShops(shopsRes.data);
-        setSellers(shopsRes.data.map(mapBackendShop));
-        setApprovals(shopsRes.data.map(mapBackendShopApproval));
+      if (shopsRes.status === 'fulfilled' && shopsRes.value.success && shopsRes.value.data) {
+        setBackendShops(shopsRes.value.data);
+        setSellers(shopsRes.value.data.map(mapBackendShop));
+        setApprovals(shopsRes.value.data.map(mapBackendShopApproval));
 
-        if (!selectedSellerId && shopsRes.data.length > 0) {
-          setSelectedSellerId(shopsRes.data[0]._id);
+        if (!selectedSellerId && shopsRes.value.data.length > 0) {
+          setSelectedSellerId(shopsRes.value.data[0]._id);
         }
-        if (!selectedApprovalId && shopsRes.data.length > 0) {
-          const pending = shopsRes.data.find(s => s.approvalStatus === 'PENDING') || shopsRes.data[0];
+        if (!selectedApprovalId && shopsRes.value.data.length > 0) {
+          const pending = shopsRes.value.data.find(s => s.approvalStatus === 'PENDING') || shopsRes.value.data[0];
           setSelectedApprovalId(pending._id);
         }
       }
 
       // 6. Customers
-      if (customersRes.success && customersRes.data) {
-        setBackendCustomers(customersRes.data);
-        setCustomers(customersRes.data.map(mapBackendCustomer));
+      if (customersRes.status === 'fulfilled' && customersRes.value.success && customersRes.value.data) {
+        setBackendCustomers(customersRes.value.data);
+        setCustomers(customersRes.value.data.map(mapBackendCustomer));
       }
 
       // 7. Analytics Overview
-      if (analyticsRes.success && analyticsRes.data) {
-        setAnalytics(analyticsRes.data);
+      if (analyticsRes.status === 'fulfilled' && analyticsRes.value.success && analyticsRes.value.data) {
+        setAnalytics(analyticsRes.value.data);
+      }
+
+      // 8. Issues
+      if (issuesRes.status === 'fulfilled' && issuesRes.value.success && issuesRes.value.data) {
+        setIssues(issuesRes.value.data.map(mapBackendIssue));
+      }
+
+      // 9. Product Requests
+      if (productReqRes.status === 'fulfilled' && productReqRes.value.success && productReqRes.value.data) {
+        setProductRequests(productReqRes.value.data.map(mapBackendProductRequest));
+      }
+
+      // 10. Global Settings
+      if (settingsRes.status === 'fulfilled' && settingsRes.value.success && settingsRes.value.data) {
+        setGlobalSettings(mapBackendGlobalSettings(settingsRes.value.data));
+      }
+
+      // 11. Audit Logs
+      if (auditRes.status === 'fulfilled' && auditRes.value.success && auditRes.value.data) {
+        setAuditLogs(auditRes.value.data.map(mapBackendAuditLog));
       }
     } catch (err: any) {
       console.error('[AppContext] Failed to load production data', err);
@@ -256,6 +337,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setSellers([]);
       setCustomers([]);
       setApprovals([]);
+      setIssues([]);
+      setProductRequests([]);
+      setGlobalSettings(null);
+      setAuditLogs([]);
       setAnalytics(null);
     }
   }, [isAuthenticated, refreshAllData]);
@@ -280,7 +365,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const res = await catalogService.createProduct({
         name: p.name,
         description: p.description,
-        images: p.imageUrl ? [p.imageUrl] : [],
+        images: p.images && p.images.length > 0 ? p.images : (p.imageUrl ? [p.imageUrl] : []),
         categoryId: categoryMatch._id,
         brandId: brandMatch ? brandMatch._id : null,
         unitId: unitMatch._id,
@@ -306,7 +391,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       const payload: any = {};
       if (p.name !== undefined) payload.name = p.name;
       if (p.description !== undefined) payload.description = p.description;
-      if (p.imageUrl) payload.images = [p.imageUrl];
+      if (p.images !== undefined) {
+        payload.images = p.images;
+      } else if (p.imageUrl) {
+        payload.images = [p.imageUrl];
+      }
       if (p.status !== undefined) payload.isActive = p.status === 'Active';
 
       const res = await catalogService.updateProduct(id, payload);
@@ -345,6 +434,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         name: c.name,
         slug,
         description: c.description,
+        imageUrl: c.imageUrl,
         isActive: c.status === 'Active',
       });
 
@@ -367,6 +457,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       if (c.name !== undefined) payload.name = c.name;
       if (c.description !== undefined) payload.description = c.description;
       if (c.status !== undefined) payload.isActive = c.status === 'Active';
+      if (c.imageUrl !== undefined) payload.imageUrl = c.imageUrl;
 
       const res = await catalogService.updateCategory(id, payload);
       if (res.success && res.data) {
@@ -399,11 +490,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const addBrand = async (b: Omit<Brand, 'id'>) => {
     try {
       const slug = b.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const brandLogo = b.imageUrl || b.logoUrl || undefined;
       const res = await catalogService.createBrand({
         name: b.name,
         slug,
         description: b.origin,
-        imageUrl: b.logoUrl,
+        imageUrl: brandLogo,
         isActive: b.status === 'Active',
       });
 
@@ -424,7 +516,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     try {
       const payload: any = {};
       if (b.name !== undefined) payload.name = b.name;
-      if (b.logoUrl !== undefined) payload.imageUrl = b.logoUrl;
+      if (b.origin !== undefined) payload.description = b.origin;
+      if (b.imageUrl !== undefined) payload.imageUrl = b.imageUrl;
+      else if (b.logoUrl !== undefined) payload.imageUrl = b.logoUrl;
       if (b.status !== undefined) payload.isActive = b.status === 'Active';
 
       const res = await catalogService.updateBrand(id, payload);
@@ -602,6 +696,167 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  // Issues Management
+  const loadIssues = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setIsLoadingIssues(true);
+    try {
+      const res = await issueService.getIssues({ limit: 100 });
+      if (res.success && res.data) {
+        setIssues(res.data.map(mapBackendIssue));
+      }
+    } catch (err: any) {
+      console.error('[AppContext] Failed to load issues', err);
+    } finally {
+      setIsLoadingIssues(false);
+    }
+  }, [isAuthenticated]);
+
+  const updateIssueStatus = async (id: string, status: IssueStatus, adminNotes?: string): Promise<boolean> => {
+    try {
+      const res = await issueService.updateIssueStatus(id, { status, adminNotes });
+      if (res.success && res.data) {
+        const mapped = mapBackendIssue(res.data);
+        setIssues(prev => prev.map(iss => iss.id === id ? mapped : iss));
+        showToast('Issue Updated', `Issue status changed to ${status.replace(/_/g, ' ')}.`, 'success');
+        return true;
+      } else {
+        const msg = getApiErrorMessage(res, 'Failed to update issue status');
+        showToast('Update Failed', msg, 'error');
+        return false;
+      }
+    } catch (err: any) {
+      const msg = err?.message || 'Failed to update issue';
+      showToast('Error', msg, 'error');
+      return false;
+    }
+  };
+
+  // Product Requests
+  const loadProductRequests = useCallback(async (status?: string) => {
+    if (!isAuthenticated) return;
+    setIsLoadingProductRequests(true);
+    try {
+      const res = await productRequestService.getProductRequests({ status, limit: 100 });
+      if (res.success && res.data) {
+        setProductRequests(res.data.map(mapBackendProductRequest));
+      }
+    } catch (err: any) {
+      console.error('[AppContext] Failed to load product requests', err);
+    } finally {
+      setIsLoadingProductRequests(false);
+    }
+  }, [isAuthenticated]);
+
+  const approveProductRequest = async (id: string): Promise<boolean> => {
+    try {
+      const res = await productRequestService.approveProductRequest(id);
+      if (res.success && res.data) {
+        const mapped = mapBackendProductRequest(res.data);
+        setProductRequests(prev => prev.map(pr => pr.id === id ? mapped : pr));
+        showToast('Request Approved', 'Seller product request approved and created in catalog.', 'success');
+        return true;
+      } else {
+        const msg = getApiErrorMessage(res, 'Failed to approve product request');
+        showToast('Approval Failed', msg, 'error');
+        return false;
+      }
+    } catch (err: any) {
+      showToast('Error', err?.message || 'Failed to approve product request', 'error');
+      return false;
+    }
+  };
+
+  const rejectProductRequest = async (id: string, adminNotes?: string): Promise<boolean> => {
+    try {
+      const res = await productRequestService.rejectProductRequest(id, adminNotes);
+      if (res.success && res.data) {
+        const mapped = mapBackendProductRequest(res.data);
+        setProductRequests(prev => prev.map(pr => pr.id === id ? mapped : pr));
+        showToast('Request Rejected', 'Product request rejected.', 'info');
+        return true;
+      } else {
+        const msg = getApiErrorMessage(res, 'Failed to reject product request');
+        showToast('Rejection Failed', msg, 'error');
+        return false;
+      }
+    } catch (err: any) {
+      showToast('Error', err?.message || 'Failed to reject product request', 'error');
+      return false;
+    }
+  };
+
+
+  // Global Settings
+  const loadGlobalSettings = useCallback(async () => {
+    if (!isAuthenticated) return;
+    setIsLoadingSettings(true);
+    try {
+      const res = await settingsService.getSettings();
+      if (res.success && res.data) {
+        setGlobalSettings(mapBackendGlobalSettings(res.data));
+      }
+    } catch (err: any) {
+      console.error('[AppContext] Failed to load settings', err);
+    } finally {
+      setIsLoadingSettings(false);
+    }
+  }, [isAuthenticated]);
+
+  const updateGlobalSettings = async (payload: { universalSearchRadiusKm?: number; globalDeliveryChargePaise?: number }): Promise<boolean> => {
+    try {
+      const res = await settingsService.updateSettings(payload);
+      if (res.success && res.data) {
+        setGlobalSettings(mapBackendGlobalSettings(res.data));
+        showToast('Settings Saved', 'Platform global settings updated successfully.', 'success');
+        return true;
+      } else {
+        const msg = getApiErrorMessage(res, 'Failed to update settings');
+        showToast('Update Failed', msg, 'error');
+        return false;
+      }
+    } catch (err: any) {
+      showToast('Error', err?.message || 'Failed to update settings', 'error');
+      return false;
+    }
+  };
+
+  // Audit Logs
+  const loadAuditLogs = useCallback(async (params?: { page?: number; limit?: number; targetType?: string; action?: string }) => {
+    if (!isAuthenticated) return;
+    setIsLoadingAuditLogs(true);
+    try {
+      const res = await auditService.getAuditLogs({ limit: 50, ...params });
+      if (res.success && res.data) {
+        setAuditLogs(res.data.map(mapBackendAuditLog));
+      }
+    } catch (err: any) {
+      console.error('[AppContext] Failed to load audit logs', err);
+    } finally {
+      setIsLoadingAuditLogs(false);
+    }
+  }, [isAuthenticated]);
+
+  // Shop Details
+  const updateShopDetails = async (id: string, payload: { shopName?: string; customRadiusKm?: number | null }): Promise<boolean> => {
+    try {
+      const res = await shopService.updateShopDetails(id, payload);
+      if (res.success && res.data) {
+        const mapped = mapBackendShop(res.data);
+        setSellers(prev => prev.map(s => s.id === id ? mapped : s));
+        showToast('Shop Details Updated', `"${mapped.shopName}" updated successfully.`, 'success');
+        return true;
+      } else {
+        const msg = getApiErrorMessage(res, 'Failed to update shop details');
+        showToast('Update Failed', msg, 'error');
+        return false;
+      }
+    } catch (err: any) {
+      showToast('Error', err?.message || 'Failed to update shop details', 'error');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       activeTab,
@@ -617,6 +872,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       sellers,
       customers,
       approvals,
+      issues,
+      isLoadingIssues,
+      loadIssues,
+      updateIssueStatus,
+      productRequests,
+      isLoadingProductRequests,
+      loadProductRequests,
+      approveProductRequest,
+      rejectProductRequest,
+      globalSettings,
+      isLoadingSettings,
+      loadGlobalSettings,
+      updateGlobalSettings,
+      auditLogs,
+      isLoadingAuditLogs,
+      loadAuditLogs,
+      updateShopDetails,
       backendUnits,
       backendCategories,
       backendBrands,

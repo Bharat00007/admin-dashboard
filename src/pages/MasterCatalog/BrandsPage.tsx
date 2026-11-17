@@ -13,6 +13,7 @@ export const BrandsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [modalType, setModalType] = useState<'none' | 'add' | 'edit'>('none');
   const [activeBrand, setActiveBrand] = useState<Brand | null>(null);
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
   const [formName, setFormName] = useState('');
   const [formOrigin, setFormOrigin] = useState('');
@@ -23,8 +24,8 @@ export const BrandsPage: React.FC = () => {
   const openAddModal = () => {
     setActiveBrand(null);
     setFormName('');
-    setFormOrigin('India');
-    setFormWebsite('https://');
+    setFormOrigin('');
+    setFormWebsite('');
     setFormLogoUrl('');
     setFormStatus('Active');
     setModalType('add');
@@ -33,9 +34,9 @@ export const BrandsPage: React.FC = () => {
   const openEditModal = (b: Brand) => {
     setActiveBrand(b);
     setFormName(b.name);
-    setFormOrigin(b.origin);
-    setFormWebsite(b.website);
-    setFormLogoUrl(b.logoUrl);
+    setFormOrigin(b.origin || '');
+    setFormWebsite(b.website || '');
+    setFormLogoUrl(b.imageUrl || b.logoUrl || '');
     setFormStatus(b.status);
     setModalType('edit');
   };
@@ -45,18 +46,20 @@ export const BrandsPage: React.FC = () => {
     if (modalType === 'add') {
       addBrand({
         name: formName,
-        origin: formOrigin,
-        website: formWebsite,
-        logoUrl: formLogoUrl || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=100&auto=format&fit=crop&q=80',
+        origin: formOrigin || undefined,
+        website: formWebsite || undefined,
+        logoUrl: formLogoUrl || '',
+        imageUrl: formLogoUrl || '',
         status: formStatus,
         productCount: 0
       });
     } else if (modalType === 'edit' && activeBrand) {
       updateBrand(activeBrand.id, {
         name: formName,
-        origin: formOrigin,
-        website: formWebsite,
-        logoUrl: formLogoUrl,
+        origin: formOrigin || undefined,
+        website: formWebsite || undefined,
+        logoUrl: formLogoUrl || '',
+        imageUrl: formLogoUrl || '',
         status: formStatus
       });
     }
@@ -65,8 +68,8 @@ export const BrandsPage: React.FC = () => {
 
   const filteredBrands = brands.filter(b => 
     b.name.toLowerCase().includes(search.toLowerCase()) ||
-    b.origin.toLowerCase().includes(search.toLowerCase()) ||
-    b.website.toLowerCase().includes(search.toLowerCase())
+    (b.origin && b.origin.toLowerCase().includes(search.toLowerCase())) ||
+    (b.website && b.website.toLowerCase().includes(search.toLowerCase()))
   );
 
   return (
@@ -135,8 +138,19 @@ export const BrandsPage: React.FC = () => {
                 filteredBrands.map(b => (
                 <tr key={b.id} className="hover:bg-surface-container-low/60 transition-colors group">
                   <td className="py-3.5 px-4">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-high p-0.5 border border-outline-variant/30 flex items-center justify-center">
-                      <img className="w-full h-full object-cover rounded" src={b.logoUrl} alt={b.name} />
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-surface-container-high p-0.5 border border-outline-variant/30 flex items-center justify-center shrink-0">
+                      {(b.imageUrl || b.logoUrl) && !failedImages[b.id] ? (
+                        <img 
+                          className="w-full h-full object-contain rounded" 
+                          src={b.imageUrl || b.logoUrl} 
+                          alt={b.name}
+                          onError={() => setFailedImages(prev => ({ ...prev, [b.id]: true }))}
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded bg-primary/10 text-primary flex items-center justify-center font-bold text-label-md">
+                          {b.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="py-3.5 px-4 font-bold text-on-surface">
@@ -145,18 +159,22 @@ export const BrandsPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="py-3.5 px-4 text-on-surface-variant font-medium">
-                    {b.origin}
+                    {b.origin || '—'}
                   </td>
                   <td className="py-3.5 px-4">
-                    <a 
-                      href={b.website.startsWith('http') ? b.website : `https://${b.website}`} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="font-code-sm text-primary hover:underline flex items-center gap-1"
-                    >
-                      <span>{b.website}</span>
-                      <span className="material-symbols-outlined text-[14px]">open_in_new</span>
-                    </a>
+                    {b.website ? (
+                      <a 
+                        href={b.website.startsWith('http') ? b.website : `https://${b.website}`} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="font-code-sm text-primary hover:underline flex items-center gap-1"
+                      >
+                        <span>{b.website}</span>
+                        <span className="material-symbols-outlined text-[14px]">open_in_new</span>
+                      </a>
+                    ) : (
+                      <span className="text-outline text-body-sm">—</span>
+                    )}
                   </td>
                   <td className="py-3.5 px-4 text-center">
                     <span className="font-code-sm font-semibold px-2 py-0.5 rounded bg-surface-container-high text-on-surface">

@@ -4,6 +4,8 @@ import { Category } from '../../types';
 import { Modal } from '../../components/ui/Modal';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
+import { ImageUpload } from '../../components/ui/ImageUpload';
+import { uploadService } from '../../services/uploadService';
 
 export const CategoriesPage: React.FC = () => {
   const { categories, addCategory, updateCategory, deleteCategory } = useApp();
@@ -15,8 +17,8 @@ export const CategoriesPage: React.FC = () => {
   const [formName, setFormName] = useState('');
   const [formCode, setFormCode] = useState('');
   const [formDescription, setFormDescription] = useState('');
-  const [formCommission, setFormCommission] = useState<number>(8);
   const [formIcon, setFormIcon] = useState('pets');
+  const [formImageUrl, setFormImageUrl] = useState('');
   const [formStatus, setFormStatus] = useState<'Active' | 'Inactive'>('Active');
 
   const openAddModal = () => {
@@ -24,8 +26,8 @@ export const CategoriesPage: React.FC = () => {
     setFormName('');
     setFormCode(`CAT-${Math.floor(100 + Math.random() * 900)}`);
     setFormDescription('');
-    setFormCommission(10);
     setFormIcon('pets');
+    setFormImageUrl('');
     setFormStatus('Active');
     setModalType('add');
   };
@@ -35,8 +37,8 @@ export const CategoriesPage: React.FC = () => {
     setFormName(cat.name);
     setFormCode(cat.code);
     setFormDescription(cat.description);
-    setFormCommission(cat.commission);
     setFormIcon(cat.icon);
+    setFormImageUrl(cat.imageUrl || '');
     setFormStatus(cat.status);
     setModalType('edit');
   };
@@ -48,8 +50,8 @@ export const CategoriesPage: React.FC = () => {
         name: formName,
         code: formCode,
         description: formDescription,
-        commission: formCommission,
         icon: formIcon,
+        imageUrl: formImageUrl,
         status: formStatus,
         productCount: 0,
         color: '#3d7ff0'
@@ -59,8 +61,8 @@ export const CategoriesPage: React.FC = () => {
         name: formName,
         code: formCode,
         description: formDescription,
-        commission: formCommission,
         icon: formIcon,
+        imageUrl: formImageUrl,
         status: formStatus
       });
     }
@@ -127,8 +129,14 @@ export const CategoriesPage: React.FC = () => {
             >
               <div>
                 <div className="flex items-start justify-between mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[26px]">{cat.icon}</span>
+                  <div className="w-12 h-12 rounded-xl bg-surface-container-high border border-outline-variant/30 overflow-hidden flex items-center justify-center shrink-0">
+                    {cat.imageUrl ? (
+                      <img src={cat.imageUrl} alt={cat.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-primary/10 text-primary flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[26px]">{cat.icon}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge variant={cat.status === 'Active' ? 'success' : 'neutral'}>
@@ -160,8 +168,8 @@ export const CategoriesPage: React.FC = () => {
                 <span className="font-code-sm font-semibold text-on-surface">
                   {cat.productCount} SKUs
                 </span>
-                <span className="px-2.5 py-1 rounded bg-secondary-container/20 text-secondary font-label-sm font-bold">
-                  {cat.commission}% Commission
+                <span className="px-2.5 py-1 rounded bg-secondary-container/20 text-secondary font-label-sm font-semibold">
+                  Taxonomy Node
                 </span>
               </div>
             </div>
@@ -201,33 +209,17 @@ export const CategoriesPage: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
-                Category Code *
-              </label>
-              <input
-                type="text"
-                required
-                value={formCode}
-                onChange={(e) => setFormCode(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-code-sm font-code-sm focus:border-primary focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
-                Commission Rate (%) *
-              </label>
-              <input
-                type="number"
-                required
-                min={0}
-                max={100}
-                value={formCommission}
-                onChange={(e) => setFormCommission(Number(e.target.value))}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-md font-body-md focus:border-primary focus:outline-none"
-              />
-            </div>
+          <div>
+            <label className="block font-label-sm text-label-sm text-on-surface-variant font-semibold mb-1">
+              Category Code / Slug *
+            </label>
+            <input
+              type="text"
+              required
+              value={formCode}
+              onChange={(e) => setFormCode(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-code-sm font-code-sm focus:border-primary focus:outline-none"
+            />
           </div>
 
           <div>
@@ -240,6 +232,17 @@ export const CategoriesPage: React.FC = () => {
               onChange={(e) => setFormDescription(e.target.value)}
               placeholder="Detailed description of what items belong in this category..."
               className="w-full px-3 py-2 rounded-lg border border-outline-variant/40 bg-surface-container-low text-body-md font-body-md focus:border-primary focus:outline-none"
+            />
+          </div>
+
+          {/* Category Image Upload */}
+          <div className="pt-1">
+            <ImageUpload
+              label="Category Image"
+              value={formImageUrl}
+              onChange={(url) => setFormImageUrl(url)}
+              helperText="Upload JPG, PNG, or WEBP (Max 1MB). Image uploads directly to GoTails cloud storage."
+              customUpload={uploadService.uploadCategoryImage}
             />
           </div>
 

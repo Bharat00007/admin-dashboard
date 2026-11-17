@@ -147,7 +147,13 @@ export const CustomersPage: React.FC = () => {
                 <tr key={c.id} className="hover:bg-surface-container-low/60 transition-colors group">
                   <td className="py-3.5 px-6">
                     <div className="flex items-center gap-3">
-                      <img className="w-10 h-10 rounded-full object-cover border border-outline-variant/30 flex-shrink-0" src={c.avatarUrl} alt={c.name} />
+                      {c.avatarUrl ? (
+                        <img className="w-10 h-10 rounded-full object-cover border border-outline-variant/30 flex-shrink-0" src={c.avatarUrl} alt={c.name} />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-label-md shrink-0 border border-primary/20">
+                          {c.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
                       <div>
                         <span className="font-bold text-on-surface block">{c.name}</span>
                         <span className="font-code-sm text-primary text-[12px] block">{c.email}</span>
