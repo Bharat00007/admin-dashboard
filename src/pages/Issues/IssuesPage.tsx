@@ -35,6 +35,7 @@ export const IssuesPage: React.FC = () => {
   const [newStatus, setNewStatus] = useState<IssueStatus>('OPEN');
   const [adminNotes, setAdminNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [quickResolvingId, setQuickResolvingId] = useState<string | null>(null);
 
   // Compute overall KPI counts
   const kpis = useMemo(() => {
@@ -120,6 +121,19 @@ export const IssuesPage: React.FC = () => {
     setIsUpdating(false);
     if (success) {
       setSelectedIssue(prev => prev ? { ...prev, status: newStatus, adminNotes } : null);
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleResolveDirectly = async (issueId: string, notes?: string) => {
+    setIsUpdating(true);
+    const success = await updateIssueStatus(issueId, 'RESOLVED', notes);
+    setIsUpdating(false);
+    if (success) {
+      if (selectedIssue && selectedIssue.id === issueId) {
+        setSelectedIssue(prev => prev ? { ...prev, status: 'RESOLVED', adminNotes: notes || prev.adminNotes } : null);
+      }
+      setIsModalOpen(false);
     }
   };
 
@@ -549,17 +563,31 @@ export const IssuesPage: React.FC = () => {
 
                       {/* Actions */}
                       <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          icon="visibility"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openDetails(issue);
-                          }}
-                        >
-                          Review
-                        </Button>
+                        <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                          {issue.status !== 'RESOLVED' && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              icon="task_alt"
+                              disabled={quickResolvingId === issue.id}
+                              onClick={async () => {
+                                setQuickResolvingId(issue.id);
+                                await handleResolveDirectly(issue.id, issue.adminNotes || undefined);
+                                setQuickResolvingId(null);
+                              }}
+                            >
+                              {quickResolvingId === issue.id ? 'Resolving...' : 'Resolve'}
+                            </Button>
+                          )}
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            icon="visibility"
+                            onClick={() => openDetails(issue)}
+                          >
+                            Review
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -614,20 +642,31 @@ export const IssuesPage: React.FC = () => {
           maxWidth="2xl"
           footer={
             <div className="flex items-center justify-between w-full">
-              <div className="text-[12px] text-on-surface-variant">
-                Status: {renderStatusBadge(selectedIssue.status)}
+              <div className="text-[12px] text-on-surface-variant flex items-center gap-1.5">
+                <span>Current Status:</span>
+                {renderStatusBadge(selectedIssue.status)}
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
-                  Close
+                  Cancel
                 </Button>
+                {selectedIssue.status !== 'RESOLVED' && (
+                  <Button
+                    variant="secondary"
+                    icon="task_alt"
+                    onClick={() => handleResolveDirectly(selectedIssue.id, adminNotes || selectedIssue.adminNotes || undefined)}
+                    disabled={isUpdating}
+                  >
+                    {isUpdating ? 'Resolving...' : 'Resolve Ticket'}
+                  </Button>
+                )}
                 <Button
                   variant="primary"
                   icon="check"
                   onClick={handleUpdate}
                   disabled={isUpdating}
                 >
-                  {isUpdating ? 'Saving...' : 'Save Status & Notes'}
+                  {isUpdating ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>
             </div>

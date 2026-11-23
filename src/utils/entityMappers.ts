@@ -283,38 +283,94 @@ export function mapBackendCustomer(u: BackendUser): Customer {
  * Maps BackendIssue -> Frontend Issue
  */
 export function mapBackendIssue(iss: BackendIssue): Issue {
-  const isSellerReported = !iss.customerId || iss.description.toLowerCase().includes('[seller') || iss.description.toLowerCase().includes('merchant');
+  const isSellerReported = !iss.customerId || (typeof iss.description === 'string' && (iss.description.toLowerCase().includes('[seller') || iss.description.toLowerCase().includes('merchant')));
+
+  // Safely extract orderId whether populated object or raw ObjectId string
+  let orderInfo: Issue['orderId'] = null;
+  if (iss.orderId && typeof iss.orderId === 'object' && '_id' in iss.orderId) {
+    const ord = iss.orderId as any;
+    orderInfo = {
+      id: ord._id || '',
+      orderNumber: ord.orderNumber || '—',
+      status: ord.status || '—',
+      totalAmount: typeof ord.totalPaise === 'number' ? ord.totalPaise / 100 : 0,
+      createdAt: ord.createdAt ? formatDate(ord.createdAt) : '—',
+    };
+  } else if (typeof iss.orderId === 'string' && iss.orderId.length > 0) {
+    orderInfo = {
+      id: iss.orderId,
+      orderNumber: iss.orderId.slice(-6).toUpperCase(),
+      status: '—',
+      totalAmount: 0,
+      createdAt: '—',
+    };
+  }
+
+  // Safely extract customerId whether populated object or raw ObjectId string
+  let customerInfo: Issue['customerId'] = null;
+  if (iss.customerId && typeof iss.customerId === 'object' && '_id' in iss.customerId) {
+    const cust = iss.customerId as any;
+    const mobileStr = cust.mobile || '';
+    customerInfo = {
+      id: cust._id || '',
+      mobile: mobileStr || '—',
+      name: cust.name || (mobileStr && mobileStr.length >= 4 ? `Customer (${mobileStr.slice(-4)})` : 'Customer Account'),
+      email: cust.email || null,
+    };
+  } else if (typeof iss.customerId === 'string' && iss.customerId.length > 0) {
+    customerInfo = {
+      id: iss.customerId,
+      mobile: '—',
+      name: `Customer (${iss.customerId.slice(-4)})`,
+      email: null,
+    };
+  }
+
+  // Safely extract shopId whether populated object or raw ObjectId string
+  let shopInfo: Issue['shopId'] = null;
+  if (iss.shopId && typeof iss.shopId === 'object' && '_id' in iss.shopId) {
+    const shp = iss.shopId as any;
+    shopInfo = {
+      id: shp._id || '',
+      shopName: shp.shopName || 'Registered Merchant',
+      phone: shp.phone || '—',
+    };
+  } else if (typeof iss.shopId === 'string' && iss.shopId.length > 0) {
+    shopInfo = {
+      id: iss.shopId,
+      shopName: 'Merchant Shop',
+      phone: '—',
+    };
+  }
+
+  // Safely extract reviewedBy whether populated object or raw ObjectId string
+  let reviewerInfo: Issue['reviewedBy'] = null;
+  if (iss.reviewedBy && typeof iss.reviewedBy === 'object' && '_id' in iss.reviewedBy) {
+    const rev = iss.reviewedBy as any;
+    reviewerInfo = {
+      id: rev._id || '',
+      name: rev.name || 'Administrator',
+      mobile: rev.mobile || null,
+    };
+  } else if (typeof iss.reviewedBy === 'string' && iss.reviewedBy.length > 0) {
+    reviewerInfo = {
+      id: iss.reviewedBy,
+      name: 'Administrator',
+      mobile: null,
+    };
+  }
 
   return {
     id: iss._id,
-    orderId: iss.orderId ? {
-      id: iss.orderId._id,
-      orderNumber: iss.orderId.orderNumber,
-      status: iss.orderId.status,
-      totalAmount: iss.orderId.totalPaise ? iss.orderId.totalPaise / 100 : 0,
-      createdAt: formatDate(iss.orderId.createdAt),
-    } : null,
-    customerId: iss.customerId ? {
-      id: iss.customerId._id,
-      mobile: iss.customerId.mobile,
-      name: iss.customerId.name || `Customer (${iss.customerId.mobile.slice(-4)})`,
-      email: iss.customerId.email || null,
-    } : null,
-    shopId: iss.shopId ? {
-      id: iss.shopId._id,
-      shopName: iss.shopId.shopName,
-      phone: iss.shopId.phone,
-    } : null,
+    orderId: orderInfo,
+    customerId: customerInfo,
+    shopId: shopInfo,
     orderStatusAtReport: iss.orderStatusAtReport || undefined,
     problemType: iss.problemType ? iss.problemType.replace(/_/g, ' ') : 'General Support',
     description: iss.description,
     status: iss.status,
     adminNotes: iss.adminNotes,
-    reviewedBy: iss.reviewedBy ? {
-      id: iss.reviewedBy._id,
-      name: iss.reviewedBy.name || 'Administrator',
-      mobile: iss.reviewedBy.mobile || null,
-    } : null,
+    reviewedBy: reviewerInfo,
     reviewedAt: iss.reviewedAt ? formatDate(iss.reviewedAt) : null,
     createdAt: formatDate(iss.createdAt),
     updatedAt: formatDate(iss.updatedAt),

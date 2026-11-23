@@ -9,18 +9,18 @@ export interface BackendIssue {
     status: string;
     totalPaise: number;
     createdAt: string;
-  } | null;
+  } | string | null;
   customerId?: {
     _id: string;
     mobile: string;
     name?: string | null;
     email?: string | null;
-  } | null;
+  } | string | null;
   shopId?: {
     _id: string;
     shopName: string;
     phone: string;
-  } | null;
+  } | string | null;
   orderStatusAtReport?: string | null;
   problemType?: string | null;
   description: string;
@@ -30,7 +30,7 @@ export interface BackendIssue {
     _id: string;
     name?: string | null;
     mobile?: string | null;
-  } | null;
+  } | string | null;
   reviewedAt?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -60,21 +60,26 @@ export const issueService = {
   /**
    * Update issue status and admin notes
    * PATCH /api/v1/admin/issues/:issueId
-   * Strict contract: { status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'CLOSED_NO_ACTION', adminNotes?: string }
+   * Strict contract: { status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'CLOSED_NO_ACTION', adminNotes?: string | null }
    */
   async updateIssueStatus(
     issueId: string,
     payload: {
       status: 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'CLOSED_NO_ACTION';
-      adminNotes?: string;
+      adminNotes?: string | null;
     }
   ): Promise<ApiResponse<BackendIssue>> {
+    const body: Record<string, any> = {
+      status: payload.status,
+    };
+    if (payload.adminNotes !== undefined) {
+      body.adminNotes = typeof payload.adminNotes === 'string' && payload.adminNotes.trim().length > 0
+        ? payload.adminNotes.trim()
+        : null;
+    }
     return apiClient<BackendIssue>(`/admin/issues/${issueId}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        status: payload.status,
-        ...(payload.adminNotes !== undefined ? { adminNotes: payload.adminNotes.trim() } : {}),
-      }),
+      body: JSON.stringify(body),
     });
   },
 };

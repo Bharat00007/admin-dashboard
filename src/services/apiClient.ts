@@ -11,11 +11,18 @@ export const API_CONFIG = {
 };
 
 export function getApiErrorMessage(response: ApiResponse<any>, fallback = 'An unexpected error occurred'): string {
-  if (response.message) return response.message;
-  if (typeof response.error === 'string' && response.error) return response.error;
-  if (response.error && typeof response.error === 'object' && response.error.message) {
-    return response.error.message;
+  if (response.error && typeof response.error === 'object') {
+    const errObj = response.error as any;
+    if (Array.isArray(errObj.details) && errObj.details.length > 0) {
+      const detailsMsg = errObj.details
+        .map((d: any) => (typeof d === 'string' ? d : d.message || JSON.stringify(d)))
+        .join('; ');
+      if (detailsMsg) return detailsMsg;
+    }
+    if (errObj.message) return errObj.message;
   }
+  if (typeof response.error === 'string' && response.error) return response.error;
+  if (response.message) return response.message;
   return fallback;
 }
 

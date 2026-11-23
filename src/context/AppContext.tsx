@@ -30,6 +30,7 @@ import { productRequestService } from '../services/productRequestService';
 import { settingsService } from '../services/settingsService';
 import { auditService } from '../services/auditService';
 import { getApiErrorMessage } from '../services/apiClient';
+import { formatDate } from '../utils/formatters';
 import {
     mapBackendUnit,
     mapBackendCategory,
@@ -716,9 +717,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         try {
             const res = await issueService.updateIssueStatus(id, { status, adminNotes });
             if (res.success && res.data) {
-                const mapped = mapBackendIssue(res.data);
-                setIssues(prev => prev.map(iss => iss.id === id ? mapped : iss));
-                showToast('Issue Updated', `Issue status changed to ${status.replace(/_/g, ' ')}.`, 'success');
+                // Merge confirmed update into local issue state to retain full populated order/customer details
+                setIssues(prev => prev.map(iss => {
+                    if (iss.id === id) {
+                        return {
+                            ...iss,
+                            status: (res.data!.status as IssueStatus) || status,
+                            adminNotes: res.data!.adminNotes !== undefined ? res.data!.adminNotes : (adminNotes?.trim() || null),
+                            reviewedAt: res.data!.reviewedAt ? formatDate(res.data!.reviewedAt) : (iss.reviewedAt || 'Just now'),
+                            updatedAt: res.data!.updatedAt ? formatDate(res.data!.updatedAt) : 'Just now',
+                            reviewedBy: iss.reviewedBy || { id: 'admin', name: 'Administrator' },
+                        };
+                    }
+                    return iss;
+                }));
+                showToast('Issue Updated', `Issue marked as ${status.replace(/_/g, ' ')}.`, 'success');
+                // Silently re-sync with production backend in background
+                loadIssues();
                 return true;
             } else {
                 const msg = getApiErrorMessage(res, 'Failed to update issue status');
@@ -726,8 +741,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 return false;
             }
         } catch (err: any) {
+            console.error('[AppContext] Failed to update issue status', err);
             const msg = err?.message || 'Failed to update issue';
-            showToast('Error', msg, 'error');
+            showToast('Update Failed', msg, 'error');
             return false;
         }
     };
