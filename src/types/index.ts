@@ -59,6 +59,7 @@ export interface Brand {
 }
 
 export type IssueStatus = 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'CLOSED_NO_ACTION';
+export type OrderStageFilter = 'ALL' | 'PREPARING' | 'COMPLETED';
 
 export interface Issue {
   id: string;
@@ -80,7 +81,7 @@ export interface Issue {
     shopName: string;
     phone: string;
   } | null;
-  orderStatusAtReport?: string;
+  orderStatusAtReport?: 'PREPARING' | 'COMPLETED' | string;
   problemType?: string;
   description: string;
   status: IssueStatus;

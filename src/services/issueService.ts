@@ -40,14 +40,17 @@ export const issueService = {
   /**
    * Get all issues with optional filtering and pagination
    * GET /api/v1/admin/issues
+   * Accepts status, orderStatusAtReport ('PREPARING' | 'COMPLETED'), page, limit
    */
   async getIssues(params: {
     status?: string;
+    orderStatusAtReport?: 'PREPARING' | 'COMPLETED' | string;
     page?: number;
     limit?: number;
   } = {}): Promise<ApiResponse<BackendIssue[]>> {
     const query = new URLSearchParams();
     if (params.status) query.set('status', params.status);
+    if (params.orderStatusAtReport) query.set('orderStatusAtReport', params.orderStatusAtReport);
     if (params.page) query.set('page', params.page.toString());
     if (params.limit) query.set('limit', params.limit.toString());
     const qs = query.toString();

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Issue, IssueStatus } from '../../types';
+import { Issue, IssueStatus, OrderStageFilter } from '../../types';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
@@ -12,12 +12,22 @@ export const IssuesPage: React.FC = () => {
   const initialSource = activeTab === 'customer-issues' ? 'CUSTOMER' : activeTab === 'seller-issues' ? 'SELLER' : 'ALL';
   const [sourceTab, setSourceTab] = useState<'ALL' | 'CUSTOMER' | 'SELLER'>(initialSource);
   const [statusFilter, setStatusFilter] = useState<'ALL' | IssueStatus>('ALL');
+  const [stageFilter, setStageFilter] = useState<OrderStageFilter>('ALL');
   const [search, setSearch] = useState('');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     if (activeTab === 'customer-issues') setSourceTab('CUSTOMER');
     else if (activeTab === 'seller-issues') setSourceTab('SELLER');
   }, [activeTab]);
+
+  // Reset pagination when any filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [sourceTab, statusFilter, stageFilter, search]);
 
   // Selected Issue & Modal
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
@@ -26,7 +36,7 @@ export const IssuesPage: React.FC = () => {
   const [adminNotes, setAdminNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  // Compute KPI counts
+  // Compute overall KPI counts
   const kpis = useMemo(() => {
     const total = issues.length;
     const open = issues.filter(i => i.status === 'OPEN').length;
@@ -35,8 +45,23 @@ export const IssuesPage: React.FC = () => {
     const closed = issues.filter(i => i.status === 'CLOSED_NO_ACTION').length;
     const customerCount = issues.filter(i => i.reporterType === 'CUSTOMER').length;
     const sellerCount = issues.filter(i => i.reporterType === 'SELLER').length;
-    return { total, open, underReview, resolved, closed, customerCount, sellerCount };
+    const preparingCount = issues.filter(i => i.orderStatusAtReport === 'PREPARING').length;
+    const completedCount = issues.filter(i => i.orderStatusAtReport === 'COMPLETED').length;
+    return { total, open, underReview, resolved, closed, customerCount, sellerCount, preparingCount, completedCount };
   }, [issues]);
+
+  // Compute stage counts tailored to the current source tab (All, Customer, or Seller)
+  const currentSourceIssues = useMemo(() => {
+    if (sourceTab === 'ALL') return issues;
+    return issues.filter(i => i.reporterType === sourceTab);
+  }, [issues, sourceTab]);
+
+  const stageCounts = useMemo(() => {
+    const preparing = currentSourceIssues.filter(i => i.orderStatusAtReport === 'PREPARING').length;
+    const completed = currentSourceIssues.filter(i => i.orderStatusAtReport === 'COMPLETED').length;
+    const all = currentSourceIssues.length;
+    return { all, preparing, completed };
+  }, [currentSourceIssues]);
 
   // Filtered Issues list
   const filteredIssues = useMemo(() => {
@@ -44,6 +69,12 @@ export const IssuesPage: React.FC = () => {
       // Source filter
       if (sourceTab !== 'ALL' && item.reporterType !== sourceTab) {
         return false;
+      }
+      // Order reporting stage filter (PREPARING vs COMPLETED)
+      if (stageFilter !== 'ALL') {
+        if (item.orderStatusAtReport !== stageFilter) {
+          return false;
+        }
       }
       // Status filter
       if (statusFilter !== 'ALL' && item.status !== statusFilter) {
@@ -66,7 +97,14 @@ export const IssuesPage: React.FC = () => {
       }
       return true;
     });
-  }, [issues, sourceTab, statusFilter, search]);
+  }, [issues, sourceTab, stageFilter, statusFilter, search]);
+
+  // Pagination calculation
+  const totalPages = Math.max(1, Math.ceil(filteredIssues.length / itemsPerPage));
+  const paginatedIssues = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredIssues.slice(start, start + itemsPerPage);
+  }, [filteredIssues, currentPage, itemsPerPage]);
 
   const openDetails = (issue: Issue) => {
     setSelectedIssue(issue);
@@ -85,6 +123,13 @@ export const IssuesPage: React.FC = () => {
     }
   };
 
+  const resetAllFilters = () => {
+    setStageFilter('ALL');
+    setStatusFilter('ALL');
+    setSearch('');
+    setCurrentPage(1);
+  };
+
   const renderStatusBadge = (status: IssueStatus) => {
     switch (status) {
       case 'OPEN':
@@ -98,6 +143,30 @@ export const IssuesPage: React.FC = () => {
       default:
         return <Badge variant="neutral" size="sm">{status}</Badge>;
     }
+  };
+
+  const renderStageBadge = (stage?: string) => {
+    if (stage === 'PREPARING') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 whitespace-nowrap">
+          <span className="material-symbols-outlined text-[13px]">skillet</span>
+          During Preparing
+        </span>
+      );
+    }
+    if (stage === 'COMPLETED') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 whitespace-nowrap">
+          <span className="material-symbols-outlined text-[13px]">task_alt</span>
+          After Completion
+        </span>
+      );
+    }
+    return (
+      <span className="text-outline text-[12px] font-mono">
+        {stage || '—'}
+      </span>
+    );
   };
 
   return (
@@ -116,7 +185,7 @@ export const IssuesPage: React.FC = () => {
           <Button
             variant="secondary"
             icon="refresh"
-            onClick={loadIssues}
+            onClick={() => loadIssues()}
             disabled={isLoadingIssues}
           >
             {isLoadingIssues ? 'Syncing...' : 'Sync Issues'}
@@ -168,14 +237,14 @@ export const IssuesPage: React.FC = () => {
           </div>
           <div className="text-2xl font-bold text-on-surface mt-2">{kpis.total}</div>
           <p className="text-[12px] text-on-surface-variant mt-1">
-            {kpis.customerCount} Buyer · {kpis.sellerCount} Seller
+            {kpis.preparingCount} In Prep · {kpis.completedCount} Post Delivery
           </p>
         </div>
       </div>
 
       {/* Main Container */}
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-xs overflow-hidden">
-        {/* Source Navigation Tabs & Filter Bar */}
+        {/* Source Navigation Tabs & Primary Filter Bar */}
         <div className="p-4 border-b border-outline-variant/20 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* Source Tabs */}
           <div className="inline-flex rounded-lg bg-surface-container p-1 shrink-0">
@@ -216,9 +285,9 @@ export const IssuesPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Search & Status Filter */}
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 flex-1 max-w-xl justify-end">
-            <div className="relative flex-1 min-w-[180px]">
+          {/* Search, Order Stage Filter & Status Filter */}
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 flex-1 max-w-2xl justify-end">
+            <div className="relative flex-1 min-w-[160px]">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">
                 search
               </span>
@@ -226,7 +295,7 @@ export const IssuesPage: React.FC = () => {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by ID, order, name, details..."
+                placeholder="Search by ticket, order, customer, details..."
                 className="w-full pl-9 pr-8 py-1.5 rounded-lg border border-outline-variant/30 bg-surface-container-low text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary transition-colors"
               />
               {search && (
@@ -234,16 +303,34 @@ export const IssuesPage: React.FC = () => {
                   type="button"
                   onClick={() => setSearch('')}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
+                  title="Clear search"
                 >
                   <span className="material-symbols-outlined text-[14px]">close</span>
                 </button>
               )}
             </div>
 
+            {/* Stage Filter Dropdown */}
+            <div className="relative">
+              <select
+                value={stageFilter}
+                onChange={(e) => setStageFilter(e.target.value as OrderStageFilter)}
+                aria-label="Filter issues by order reporting stage"
+                className="px-3 py-1.5 rounded-lg border border-outline-variant/30 bg-surface-container-low text-label-sm text-on-surface focus:outline-none focus:border-primary font-medium cursor-pointer"
+                title="Filter issues by order stage when reported"
+              >
+                <option value="ALL">All Stages ({stageCounts.all})</option>
+                <option value="PREPARING">During Preparing ({stageCounts.preparing})</option>
+                <option value="COMPLETED">After Completion ({stageCounts.completed})</option>
+              </select>
+            </div>
+
+            {/* Status Filter Dropdown */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as 'ALL' | IssueStatus)}
-              className="px-3 py-1.5 rounded-lg border border-outline-variant/30 bg-surface-container-low text-label-sm text-on-surface focus:outline-none focus:border-primary"
+              aria-label="Filter issues by status"
+              className="px-3 py-1.5 rounded-lg border border-outline-variant/30 bg-surface-container-low text-label-sm text-on-surface focus:outline-none focus:border-primary font-medium cursor-pointer"
             >
               <option value="ALL">All Statuses</option>
               <option value="OPEN">Open</option>
@@ -251,6 +338,89 @@ export const IssuesPage: React.FC = () => {
               <option value="RESOLVED">Resolved</option>
               <option value="CLOSED_NO_ACTION">Closed (No Action)</option>
             </select>
+          </div>
+        </div>
+
+        {/* Quick Stage Filter Chips Bar */}
+        <div className="px-4 py-2.5 bg-surface-container-low/40 border-b border-outline-variant/20 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center flex-wrap gap-2">
+            <span className="text-[12px] font-semibold text-on-surface-variant uppercase tracking-wider flex items-center gap-1 mr-1">
+              <span className="material-symbols-outlined text-[15px]">filter_alt</span>
+              Order Stage:
+            </span>
+
+            {/* All Stages Chip */}
+            <button
+              type="button"
+              onClick={() => setStageFilter('ALL')}
+              className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all flex items-center gap-1.5 ${
+                stageFilter === 'ALL'
+                  ? 'bg-primary text-on-primary font-semibold shadow-xs'
+                  : 'bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+              }`}
+            >
+              All Stages
+              <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
+                stageFilter === 'ALL' ? 'bg-white/20 text-white' : 'bg-surface-container-highest text-on-surface'
+              }`}>
+                {stageCounts.all}
+              </span>
+            </button>
+
+            {/* During Preparing Chip */}
+            <button
+              type="button"
+              onClick={() => setStageFilter('PREPARING')}
+              className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all flex items-center gap-1.5 ${
+                stageFilter === 'PREPARING'
+                  ? 'bg-amber-600 text-white font-semibold shadow-xs'
+                  : 'bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[14px]">skillet</span>
+              During Preparing
+              <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
+                stageFilter === 'PREPARING' ? 'bg-white/20 text-white' : 'bg-amber-500/20 text-amber-800 dark:text-amber-200'
+              }`}>
+                {stageCounts.preparing}
+              </span>
+            </button>
+
+            {/* After Completion Chip */}
+            <button
+              type="button"
+              onClick={() => setStageFilter('COMPLETED')}
+              className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all flex items-center gap-1.5 ${
+                stageFilter === 'COMPLETED'
+                  ? 'bg-emerald-600 text-white font-semibold shadow-xs'
+                  : 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[14px]">task_alt</span>
+              After Completion
+              <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
+                stageFilter === 'COMPLETED' ? 'bg-white/20 text-white' : 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-200'
+              }`}>
+                {stageCounts.completed}
+              </span>
+            </button>
+          </div>
+
+          {/* Filter Status & Reset */}
+          <div className="flex items-center gap-3 text-[12px]">
+            <span className="text-on-surface-variant">
+              Showing <span className="font-semibold text-on-surface">{filteredIssues.length}</span> of {issues.length} tickets
+            </span>
+            {(stageFilter !== 'ALL' || statusFilter !== 'ALL' || search) && (
+              <button
+                type="button"
+                onClick={resetAllFilters}
+                className="text-primary hover:underline font-semibold flex items-center gap-0.5"
+              >
+                <span className="material-symbols-outlined text-[13px]">restart_alt</span>
+                Reset Filters
+              </button>
+            )}
           </div>
         </div>
 
@@ -263,6 +433,7 @@ export const IssuesPage: React.FC = () => {
                 <th className="py-3.5 px-4">Reporter &amp; Source</th>
                 <th className="py-3.5 px-4">Problem Category</th>
                 <th className="py-3.5 px-4">Associated Order</th>
+                <th className="py-3.5 px-4">Stage At Report</th>
                 <th className="py-3.5 px-4">Status</th>
                 <th className="py-3.5 px-4">Reported</th>
                 <th className="py-3.5 px-4 text-right">Actions</th>
@@ -271,22 +442,35 @@ export const IssuesPage: React.FC = () => {
             <tbody className="divide-y divide-outline-variant/10 text-body-sm font-body-sm">
               {filteredIssues.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-on-surface-variant">
-                    <div className="flex flex-col items-center justify-center">
-                      <span className="material-symbols-outlined text-[40px] text-outline mb-2">
+                  <td colSpan={8} className="py-12 text-center text-on-surface-variant">
+                    <div className="flex flex-col items-center justify-center max-w-sm mx-auto">
+                      <span className="material-symbols-outlined text-[42px] text-outline mb-2">
                         inbox
                       </span>
-                      <p className="font-semibold text-on-surface">No support issues found</p>
-                      <p className="text-[12px] text-on-surface-variant mt-0.5">
-                        {search || statusFilter !== 'ALL' || sourceTab !== 'ALL'
+                      <p className="font-semibold text-on-surface text-base">No support issues found</p>
+                      <p className="text-[12px] text-on-surface-variant mt-1 text-center">
+                        {stageFilter !== 'ALL'
+                          ? `No tickets reported ${stageFilter === 'PREPARING' ? 'during order preparation' : 'after order completion'} match the current criteria.`
+                          : search || statusFilter !== 'ALL' || sourceTab !== 'ALL'
                           ? 'Try adjusting your filters or search keywords.'
                           : 'There are currently no tickets submitted in the system.'}
                       </p>
+                      {(stageFilter !== 'ALL' || statusFilter !== 'ALL' || search) && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          icon="restart_alt"
+                          onClick={resetAllFilters}
+                          className="mt-4"
+                        >
+                          Reset All Filters
+                        </Button>
+                      )}
                     </div>
                   </td>
                 </tr>
               ) : (
-                filteredIssues.map((issue) => {
+                paginatedIssues.map((issue) => {
                   const isSeller = issue.reporterType === 'SELLER';
                   return (
                     <tr 
@@ -348,6 +532,11 @@ export const IssuesPage: React.FC = () => {
                         )}
                       </td>
 
+                      {/* Stage at Report */}
+                      <td className="py-3 px-4 whitespace-nowrap">
+                        {renderStageBadge(issue.orderStatusAtReport)}
+                      </td>
+
                       {/* Status */}
                       <td className="py-3 px-4 whitespace-nowrap">
                         {renderStatusBadge(issue.status)}
@@ -379,6 +568,40 @@ export const IssuesPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {filteredIssues.length > itemsPerPage && (
+          <div className="p-3 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm text-on-surface-variant">
+            <div className="text-[12px]">
+              Showing <span className="font-semibold text-on-surface">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+              <span className="font-semibold text-on-surface">
+                {Math.min(currentPage * itemsPerPage, filteredIssues.length)}
+              </span>{' '}
+              of <span className="font-semibold text-on-surface">{filteredIssues.length}</span> issues
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              >
+                Previous
+              </Button>
+              <span className="px-3 py-1 text-label-sm font-semibold text-on-surface">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Review / Details Modal */}
@@ -482,19 +705,23 @@ export const IssuesPage: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-on-surface-variant">Order Status:</span>
+                      <span className="text-on-surface-variant">Current Order Status:</span>
                       <span className="font-semibold text-on-surface">{selectedIssue.orderId.status}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-on-surface-variant">Order Date:</span>
                       <span className="text-on-surface">{selectedIssue.orderId.createdAt}</span>
                     </div>
-                    {selectedIssue.orderStatusAtReport && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-on-surface-variant">Status At Report:</span>
-                        <span className="font-medium text-secondary">{selectedIssue.orderStatusAtReport}</span>
+                    {/* Reporting Stage Highlight */}
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-surface-container border border-outline-variant/30 mt-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[15px] text-on-surface-variant">
+                          history_toggle_off
+                        </span>
+                        <span className="text-[12px] font-medium text-on-surface-variant">Reported Stage:</span>
                       </div>
-                    )}
+                      {renderStageBadge(selectedIssue.orderStatusAtReport)}
+                    </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center h-20 text-on-surface-variant text-[12px]">
