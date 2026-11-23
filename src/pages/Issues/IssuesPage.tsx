@@ -36,6 +36,19 @@ export const IssuesPage: React.FC = () => {
   const [adminNotes, setAdminNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [quickResolvingId, setQuickResolvingId] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
+
+  // Synchronize selectedIssue with updated issues list
+  useEffect(() => {
+    if (selectedIssue) {
+      const fresh = issues.find(i => i.id === selectedIssue.id);
+      if (fresh && (fresh.status !== selectedIssue.status || fresh.adminNotes !== selectedIssue.adminNotes)) {
+        setSelectedIssue(fresh);
+        setNewStatus(fresh.status);
+        setAdminNotes(fresh.adminNotes || '');
+      }
+    }
+  }, [issues]);
 
   // Compute overall KPI counts
   const kpis = useMemo(() => {
@@ -111,29 +124,38 @@ export const IssuesPage: React.FC = () => {
     setSelectedIssue(issue);
     setNewStatus(issue.status);
     setAdminNotes(issue.adminNotes || '');
+    setModalError(null);
     setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedIssue(null);
+    setModalError(null);
   };
 
   const handleUpdate = async () => {
     if (!selectedIssue) return;
     setIsUpdating(true);
-    const success = await updateIssueStatus(selectedIssue.id, newStatus, adminNotes);
+    setModalError(null);
+    const res = await updateIssueStatus(selectedIssue.id, newStatus, adminNotes);
     setIsUpdating(false);
-    if (success) {
-      setSelectedIssue(prev => prev ? { ...prev, status: newStatus, adminNotes } : null);
-      setIsModalOpen(false);
+    if (res.success) {
+      closeModal();
+    } else {
+      setModalError(res.error || 'Failed to update issue status.');
     }
   };
 
   const handleResolveDirectly = async (issueId: string, notes?: string) => {
     setIsUpdating(true);
-    const success = await updateIssueStatus(issueId, 'RESOLVED', notes);
+    setModalError(null);
+    const res = await updateIssueStatus(issueId, 'RESOLVED', notes);
     setIsUpdating(false);
-    if (success) {
-      if (selectedIssue && selectedIssue.id === issueId) {
-        setSelectedIssue(prev => prev ? { ...prev, status: 'RESOLVED', adminNotes: notes || prev.adminNotes } : null);
-      }
-      setIsModalOpen(false);
+    if (res.success) {
+      closeModal();
+    } else {
+      setModalError(res.error || 'Failed to resolve issue.');
     }
   };
 
@@ -523,7 +545,9 @@ export const IssuesPage: React.FC = () => {
                       {/* Problem Category & Snippet */}
                       <td className="py-3 px-4 max-w-xs">
                         <div className="font-medium text-on-surface truncate">
-                          {issue.problemType || 'General Inquiry'}
+                          {issue.problemType || (
+                            <span className="text-on-surface-variant italic text-[12px]">Uncategorized (Legacy)</span>
+                          )}
                         </div>
                         <div className="text-[12px] text-on-surface-variant truncate mt-0.5">
                           {issue.description}
@@ -636,7 +660,7 @@ export const IssuesPage: React.FC = () => {
       {selectedIssue && (
         <Modal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeModal}
           title={`Ticket #${selectedIssue.id.slice(-6).toUpperCase()}`}
           subtitle={`Reported on ${selectedIssue.createdAt} · ${selectedIssue.reporterType} Issue`}
           maxWidth="2xl"
@@ -647,7 +671,7 @@ export const IssuesPage: React.FC = () => {
                 {renderStatusBadge(selectedIssue.status)}
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="secondary" onClick={() => setIsModalOpen(false)}>
+                <Button variant="secondary" onClick={closeModal}>
                   Cancel
                 </Button>
                 {selectedIssue.status !== 'RESOLVED' && (
@@ -672,7 +696,29 @@ export const IssuesPage: React.FC = () => {
             </div>
           }
         >
-          <div className="space-y-5 py-1">
+          <div className="space-y-4 py-1">
+            {/* Inline Error Alert if Update Failed */}
+            {modalError && (
+              <div className="bg-error/10 border border-error/30 rounded-xl p-3 flex items-start gap-2.5 text-error text-[13px] animate-fadeIn">
+                <span className="material-symbols-outlined text-[18px] shrink-0 mt-0.5">error</span>
+                <div className="flex-1">
+                  <span className="font-semibold block">Update Failed</span>
+                  <span className="text-[12px] opacity-90">{modalError}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Legacy Ticket Notice for Tickets Missing Problem Category */}
+            {!selectedIssue.problemType && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 flex items-start gap-2.5 text-amber-800 dark:text-amber-200 text-[12px]">
+                <span className="material-symbols-outlined text-[18px] text-amber-600 shrink-0 mt-0.5">info</span>
+                <div className="flex-1">
+                  <span className="font-semibold block text-[13px]">Legacy Record Notice</span>
+                  <span>This ticket was submitted before schema problem categories were enforced (missing problemType in database). If updated, the production server rejects saving due to backend database validation (HTTP 500).</span>
+                </div>
+              </div>
+            )}
+
             {/* Context Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Reporter Information Card */}
@@ -775,7 +821,7 @@ export const IssuesPage: React.FC = () => {
             <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant/30">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="font-label-sm text-label-sm font-bold text-on-surface uppercase tracking-wider">
-                  Subject: {selectedIssue.problemType || 'General Dispute'}
+                  Subject: {selectedIssue.problemType || 'Uncategorized (Legacy Record)'}
                 </span>
                 <span className="text-[11px] text-outline">
                   Created {selectedIssue.createdAt}
@@ -792,7 +838,9 @@ export const IssuesPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-[18px] text-tertiary">verified_user</span>
                   <span className="text-on-surface font-medium">
-                    Reviewed by {selectedIssue.reviewedBy?.name || 'Administrator'}
+                    {selectedIssue.reviewedBy?.name
+                      ? `Reviewed by ${selectedIssue.reviewedBy.name}`
+                      : (selectedIssue.reviewedBy?.id ? `Reviewed by Staff (ID: ${selectedIssue.reviewedBy.id.slice(-6)})` : 'Reviewed')}
                   </span>
                 </div>
                 {selectedIssue.reviewedAt && (

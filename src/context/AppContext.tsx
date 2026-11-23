@@ -110,7 +110,7 @@ interface AppContextType {
     issues: Issue[];
     isLoadingIssues: boolean;
     loadIssues: (params?: { status?: string; orderStatusAtReport?: 'PREPARING' | 'COMPLETED' | string; page?: number; limit?: number }) => Promise<void>;
-    updateIssueStatus: (id: string, status: IssueStatus, adminNotes?: string) => Promise<boolean>;
+    updateIssueStatus: (id: string, status: IssueStatus, adminNotes?: string) => Promise<{ success: boolean; error?: string }>;
 
     // Product Requests
     productRequests: ProductRequest[];
@@ -713,7 +713,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         }
     }, [isAuthenticated]);
 
-    const updateIssueStatus = async (id: string, status: IssueStatus, adminNotes?: string): Promise<boolean> => {
+    const updateIssueStatus = async (id: string, status: IssueStatus, adminNotes?: string): Promise<{ success: boolean; error?: string }> => {
         try {
             const res = await issueService.updateIssueStatus(id, { status, adminNotes });
             if (res.success && res.data) {
@@ -726,7 +726,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                             adminNotes: res.data!.adminNotes !== undefined ? res.data!.adminNotes : (adminNotes?.trim() || null),
                             reviewedAt: res.data!.reviewedAt ? formatDate(res.data!.reviewedAt) : (iss.reviewedAt || 'Just now'),
                             updatedAt: res.data!.updatedAt ? formatDate(res.data!.updatedAt) : 'Just now',
-                            reviewedBy: iss.reviewedBy || { id: 'admin', name: 'Administrator' },
+                            reviewedBy: iss.reviewedBy || (res.data!.reviewedBy ? (
+                                typeof res.data!.reviewedBy === 'object'
+                                    ? { id: (res.data!.reviewedBy as any)._id || '', name: (res.data!.reviewedBy as any).name || null, mobile: (res.data!.reviewedBy as any).mobile || null }
+                                    : { id: String(res.data!.reviewedBy), name: null, mobile: null }
+                            ) : null),
                         };
                     }
                     return iss;
@@ -734,17 +738,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 showToast('Issue Updated', `Issue marked as ${status.replace(/_/g, ' ')}.`, 'success');
                 // Silently re-sync with production backend in background
                 loadIssues();
-                return true;
+                return { success: true };
             } else {
                 const msg = getApiErrorMessage(res, 'Failed to update issue status');
                 showToast('Update Failed', msg, 'error');
-                return false;
+                return { success: false, error: msg };
             }
         } catch (err: any) {
             console.error('[AppContext] Failed to update issue status', err);
             const msg = err?.message || 'Failed to update issue';
             showToast('Update Failed', msg, 'error');
-            return false;
+            return { success: false, error: msg };
         }
     };
 

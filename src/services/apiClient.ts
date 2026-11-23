@@ -19,7 +19,12 @@ export function getApiErrorMessage(response: ApiResponse<any>, fallback = 'An un
         .join('; ');
       if (detailsMsg) return detailsMsg;
     }
-    if (errObj.message) return errObj.message;
+    if (errObj.message) {
+      if (errObj.message === 'An unexpected error occurred' && response.statusCode === 500) {
+        return 'Server database error (HTTP 500): The production backend rejected saving this record, likely due to missing required schema fields on legacy data.';
+      }
+      return errObj.message;
+    }
   }
   if (typeof response.error === 'string' && response.error) return response.error;
   if (response.message) return response.message;

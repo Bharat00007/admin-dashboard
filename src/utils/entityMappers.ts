@@ -349,13 +349,13 @@ export function mapBackendIssue(iss: BackendIssue): Issue {
     const rev = iss.reviewedBy as any;
     reviewerInfo = {
       id: rev._id || '',
-      name: rev.name || 'Administrator',
+      name: rev.name || null,
       mobile: rev.mobile || null,
     };
   } else if (typeof iss.reviewedBy === 'string' && iss.reviewedBy.length > 0) {
     reviewerInfo = {
       id: iss.reviewedBy,
-      name: 'Administrator',
+      name: null,
       mobile: null,
     };
   }
@@ -366,7 +366,7 @@ export function mapBackendIssue(iss: BackendIssue): Issue {
     customerId: customerInfo,
     shopId: shopInfo,
     orderStatusAtReport: iss.orderStatusAtReport || undefined,
-    problemType: iss.problemType ? iss.problemType.replace(/_/g, ' ') : 'General Support',
+    problemType: iss.problemType ? iss.problemType.replace(/_/g, ' ') : undefined,
     description: iss.description,
     status: iss.status,
     adminNotes: iss.adminNotes,
